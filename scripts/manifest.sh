@@ -1,0 +1,140 @@
+# shellcheck shell=bash
+# Declarative manifest of FFmpeg and its statically-linked dependencies.
+#
+# Each dependency is one line in DEPS, ordered so that dependencies come first.
+# Fields are separated by '|':
+#
+#   name | system | url | sha256 | extra-args...
+#
+#   name    short id, also used for --enable-lib<...> mapping
+#   system  one of: autotools | cmake | meson | openssl | make
+#   url     source tarball URL
+#   sha256  expected checksum, or "-" to skip verification
+#   extra   space-separated extra configure/cmake/meson args (optional)
+#
+# Special markers:
+#   @NO_STATIC@  - for autotools deps whose ./configure does not accept
+#                   --enable-static --disable-shared (e.g. zlib)
+#   @SUBDIR:dir@ - build inside a subdirectory of the extracted source
+#
+# The generic builder in builder.sh knows the standard static flags for each
+# build system, so recipes only list what differs. Add a new library by adding
+# one line here and the matching --enable-* flag in FFMPEG_ENABLE below.
+
+# --- FFmpeg itself ---
+FFMPEG_VERSION="8.1.2"
+FFMPEG_URL="https://ffmpeg.org/releases/ffmpeg-${FFMPEG_VERSION}.tar.xz"
+FFMPEG_SHA256="464beb5e7bf0c311e68b45ae2f04e9cc2af88851abb4082231742a74d97b524c"
+
+# --- Dependencies (build order matters) ---
+DEPS=(
+# crypto + core compression/encoding
+"openssl|openssl|https://www.openssl.org/source/openssl-3.6.3.tar.gz|243a86649cf6f23eeb6a2ff2456e09e5d77dd9018a54d3d96b0c6bdd6ba6c7f1|no-shared no-zlib no-tests"
+"gmp|autotools|https://gmplib.org/download/gmp/gmp-6.3.0.tar.xz|a3c2b80201b89e68616f4ad30bc66aee4927c3ce50e33929ca819d5c43538898|--enable-cxx --disable-fat"
+"zlib|autotools|https://zlib.net/fossils/zlib-1.3.2.tar.gz|bb329a0a2cd0274d05519d61c667c062e06990d72e125ee2dfa8de64f0119d16|@NO_STATIC@"
+"libiconv|autotools|https://ftp.gnu.org/pub/gnu/libiconv/libiconv-1.17.tar.gz|-"
+"xz|autotools|https://github.com/tukaani-project/xz/releases/download/v5.8.3/xz-5.8.3.tar.xz|fff1ffcf2b0da84d308a14de513a1aa23d4e9aa3464d17e64b9714bfdd0bbfb6|--disable-xz --disable-xzdec --disable-lzmadec --disable-lzmainfo --disable-scripts"
+
+# audio
+"ogg|autotools|https://downloads.xiph.org/releases/ogg/libogg-1.3.6.tar.gz|83e6704730683d004d20e21b8f7f55dcb3383cdf84c0daedf30bde175f774638"
+"vorbis|autotools|https://downloads.xiph.org/releases/vorbis/libvorbis-1.3.7.tar.gz|-|--with-ogg=@PREFIX@"
+"opus|autotools|https://github.com/xiph/opus/archive/refs/tags/v1.6.1.tar.gz|bf0b97ec7a65890b8db90ef94c4d6c18de12584c3085031953a10986f5917745|--disable-doc --disable-extra-programs"
+"lame|autotools|https://downloads.sourceforge.net/project/lame/lame/3.101/lame-3.101.tar.gz|7578af6eebd578b2bd64e468fac4ae1f03670a7e028166e67f855674b9b6aeac|--enable-nasm --disable-frontend --disable-decoder"
+"speex|autotools|https://downloads.xiph.org/releases/speex/speex-1.2.1.tar.gz|-|--disable-examples"
+"twolame|autotools|https://sourceforge.net/projects/twolame/files/twolame/0.4.0/twolame-0.4.0.tar.gz|-|--disable-nls"
+"shine|autotools|https://github.com/savonet/shine/archive/refs/tags/3.1.1.tar.gz|-"
+"opencore-amr|autotools|https://downloads.sourceforge.net/project/opencore-amr/opencore-amr/opencore-amr-0.1.6.tar.gz|483eb4061088e2b34b358e47540b5d495a96cd468e361050fae615b1809dc4a1"
+"soxr|cmake|https://sourceforge.net/projects/soxr/files/soxr-0.1.3-Source.tar.xz|-|-DWITH_OPENMP=OFF -DBUILD_TESTS=OFF -DBUILD_EXAMPLES=OFF"
+"rubberband|meson|https://github.com/breakfastquay/rubberband/archive/refs/tags/v4.0.0.tar.gz|24300f48a8014b7c863b573a9647e61b1b19b37875e2cdd92005e64c6424d266"
+"vmaf|meson|https://github.com/Netflix/vmaf/archive/refs/tags/v3.2.0.tar.gz|a28f93f3b4fa65601be324587072e32a6a704a304ba7b1aec9b70b3f709bc1dc|-Denable_tests=false -Denable_docs=false -Denable_tools=false @SUBDIR:libvmaf@"
+"jxl|cmake|https://github.com/libjxl/libjxl/archive/refs/tags/v0.11.2.tar.gz|ab38928f7f6248e2a98cc184956021acb927b16a0dee71b4d260dc040a4320ea|-DPROVISION_DEPENDENCIES=ON -DBUILD_TESTING=OFF -DJPEGXL_ENABLE_TOOLS=OFF -DJPEGXL_ENABLE_DOXYGEN=OFF -DJPEGXL_ENABLE_MANPAGES=OFF -DJPEGXL_ENABLE_BENCHMARK=OFF -DJPEGXL_ENABLE_EXAMPLES=OFF -DJPEGXL_ENABLE_JNI=OFF -DJPEGXL_ENABLE_SJPEG=OFF -DJPEGXL_ENABLE_OPENEXR=OFF -DJPEGXL_ENABLE_VIEWERS=OFF -DJPEGXL_ENABLE_PLUGINS=OFF -DJPEGXL_ENABLE_DEVTOOLS=OFF -DJPEGXL_STATIC=ON"
+
+# text/subtitles (chain: freetype -> harfbuzz -> fontconfig -> libass)
+"freetype|autotools|https://downloads.sourceforge.net/project/freetype/freetype2/2.14.3/freetype-2.14.3.tar.xz|36bc4f1cc413335368ee656c42afca65c5a3987e8768cc28cf11ba775e785a5f|--with-harfbuzz=no --with-png=no --with-bzip2=no --with-brotli=no --with-zlib=no"
+"expat|autotools|https://github.com/libexpat/libexpat/releases/download/R_2_8_2/expat-2.8.2.tar.xz|3ad89b8588e6644bd4e49981480d48b21289eebbcd4f0a1a4afb1c29f99b6ab4"
+"fribidi|autotools|https://github.com/fribidi/fribidi/releases/download/v1.0.16/fribidi-1.0.16.tar.xz|-"
+"harfbuzz|cmake|https://github.com/harfbuzz/harfbuzz/releases/download/12.3.2/harfbuzz-12.3.2.tar.xz|6f6db164359a2da5a84ef826615b448b33e6306067ad829d85d5b0bf936f1bb8|-DHB_HAVE_FREETYPE=ON -DHB_BUILD_TESTS=OFF -DHB_BUILD_EXAMPLES=OFF -DHB_BUILD_UTILS=OFF"
+"fontconfig|autotools|https://gitlab.freedesktop.org/fontconfig/fontconfig/-/archive/2.17.1/fontconfig-2.17.1.tar.gz|82e73b26adad651b236e5f5d4b3074daf8ff0910188808496326bd3449e5261d|--disable-docs"
+"libass|autotools|https://github.com/libass/libass/releases/download/0.17.5/libass-0.17.5.tar.xz|2dca25c0e0c837ddf00b52011b3f82cac1e4ddd3ad018227806b0c2288864acc"
+
+# misc
+"snappy|cmake|https://github.com/google/snappy/archive/refs/tags/1.2.2.tar.gz|90f74bc1fbf78a6c56b3c4a082a05103b3a56bb17bca1a27e052ea11723292dc|-DSNAPPY_BUILD_TESTS=OFF -DSNAPPY_BUILD_BENCHMARKS=OFF"
+"xml2|autotools|https://download.gnome.org/sources/libxml2/2.15/libxml2-2.15.3.tar.xz|78262a6e7ac170d6528ebfe2efccdf220191a5af6a6cd61ea4a9a9a5042c7a07|--without-python --without-lzma --without-zlib"
+"webp|cmake|https://github.com/webmproject/libwebp/archive/refs/tags/v1.5.0.tar.gz|668c9aba45565e24c27e17f7aaf7060a399f7f31dba6c97a044e1feacb930f37|-DWEBP_BUILD_ANIMATIONS=OFF -DWEBP_BUILD_EXTRAS=OFF -DWEBP_BUILD_GIF2WEBP=OFF -DWEBP_BUILD_IMG2WEBP=OFF -DWEBP_BUILD_VWEBP=OFF -DWEBP_BUILD_WEBPINFO=OFF -DWEBP_BUILD_LIBWEBPMUX=OFF"
+"openjpeg|cmake|https://github.com/uclouvain/openjpeg/archive/refs/tags/v2.5.4.tar.gz|a695fbe19c0165f295a8531b1e4e855cd94d0875d2f88ec4b61080677e27188a|-DBUILD_CODEC=OFF -DBUILD_TESTING=OFF -DBUILD_DOC=OFF"
+"theora|autotools|https://downloads.xiph.org/releases/theora/libtheora-1.2.0.tar.gz|279327339903b544c28a92aeada7d0dcfd0397b59c2f368cc698ac56f515906e|--with-ogg=@PREFIX@ --with-vorbis=@PREFIX@ --disable-examples --disable-oggtest --disable-vorbistest"
+"zimg|autotools|https://github.com/sekrit-twc/zimg/archive/refs/tags/release-3.0.6.tar.gz|be89390f13a5c9b2388ce0f44a5e89364a20c1c57ce46d382b1fcc3967057577"
+"vidstab|cmake|https://github.com/georgmartius/vid.stab/archive/refs/tags/v1.1.1.tar.gz|9001b6df73933555e56deac19a0f225aae152abbc0e97dc70034814a1943f3d4|-DUSE_OMP=OFF"
+"xvid|autotools|https://downloads.xvid.com/downloads/xvidcore-1.3.7.tar.gz|-|--disable-assembly @SUBDIR:build/generic@"
+
+# video codecs
+"x264|autotools|https://code.videolan.org/videolan/x264/-/archive/stable/x264-stable.tar.bz2|-|--enable-pic --disable-cli --disable-opencl"
+"x265|cmake|https://bitbucket.org/multicoreware/x265_git/get/4.2.tar.gz|-|-DENABLE_CLI=OFF -DENABLE_PIC=ON -DEXPORT_C_API=ON -DENABLE_ASSEMBLY=OFF -DENABLE_LIBNUMA=OFF @SUBDIR:source@"
+"openh264|make|https://github.com/cisco/openh264/archive/refs/tags/v2.6.0.tar.gz|558544ad358283a7ab2930d69a9ceddf913f4a51ee9bf1bfb9e377322af81a69|OS=linux ARCH=x86_64 ENABLE64BIT=Yes PREFIX=@PREFIX@ @TARGET:libraries@ @INSTALL_TARGET:install-static@"
+"kvazaar|autotools|https://github.com/ultravideo/kvazaar/archive/refs/tags/v2.3.2.tar.gz|ddd0038696631ca5368d8e40efee36d2bbb805854b9b1dda8b12ea9b397ea951|--disable-shared"
+"vvenc|cmake|https://github.com/fraunhoferhhi/vvenc/archive/refs/tags/v1.12.0.tar.gz|-|-DVVENC_ENABLE_LINK_TIME_OPT=OFF -DBUILD_SHARED_LIBS=OFF"
+"davs2|autotools|https://github.com/pkuvcl/davs2/archive/refs/tags/1.7.tar.gz|-|--enable-pic @SUBDIR:build/linux@"
+"xavs2|autotools|https://github.com/pkuvcl/xavs2/archive/refs/tags/1.4.tar.gz|-|--enable-pic @SUBDIR:build/linux@"
+"uavs3d|cmake|https://github.com/uavs3/uavs3d/archive/0e20d2c291853f196c68922a264bcd8471d75b68.tar.gz|1c1eb778b6080bc01493180ea7ae671c6444ce3aa760b5d021ba882eb0f9e3a0|-DBUILD_SHARED_LIBS=OFF"
+"dav1d|meson|https://code.videolan.org/videolan/dav1d/-/archive/1.5.3/dav1d-1.5.3.tar.gz|cbe212b02faf8c6eed5b6d55ef8a6e363aaab83f15112e960701a9c3df813686|-Denable_tools=false -Denable_tests=false"
+"vpx|autotools|https://github.com/webmproject/libvpx/archive/refs/tags/v1.16.0.tar.gz|7a479a3c66b9f5d5542a4c6a1b7d3768a983b1e5c14c60a9396edc9b649e015c|--enable-pic --disable-examples --disable-tools --disable-docs --disable-unit-tests --enable-vp8 --enable-vp9 --enable-vp9-highbitdepth"
+"aom|cmake|https://storage.googleapis.com/aom-releases/libaom-3.13.1.tar.gz|19e45a5a7192d690565229983dad900e76b513a02306c12053fb9a262cbeca7d|-DENABLE_DOCS=OFF -DENABLE_EXAMPLES=OFF -DENABLE_TESTS=OFF -DENABLE_TOOLS=OFF -DCONFIG_PIC=1"
+"svtav1|cmake|https://gitlab.com/AOMediaCodec/SVT-AV1/-/archive/v4.1.0/SVT-AV1-v4.1.0.tar.gz|6c4c0c44ff0ba3d136d6f57f3a707f9de8e9c866f50f809c1d22a43f0d8c9583|-DCMAKE_INTERPROCEDURAL_OPTIMIZATION=OFF -DBUILD_APPS=OFF -DBUILD_TESTING=OFF"
+
+# network/protocol (after openssl)
+"libssh|cmake|https://www.libssh.org/files/0.12/libssh-0.12.0.tar.xz|1a6af424d8327e5eedef4e5fe7f5b924226dd617ac9f3de80f217d82a36a7121|-DWITH_STATIC_LIB=ON -DWITH_EXAMPLES=OFF"
+"srt|cmake|https://github.com/Haivision/srt/archive/refs/tags/v1.5.5.tar.gz|c3518bc43a71b5289032395b2db4c3e09e73d78b54247d56c14553a503b491cf|-DENABLE_SHARED=OFF -DENABLE_STATIC=ON -DENABLE_APPS=OFF -DUSE_ENCLIB=openssl"
+"librist|meson|https://code.videolan.org/rist/librist/-/archive/v0.2.18/librist-v0.2.18.tar.gz|9a2d16dcdb9fb067b7ba4259a3976ff6f8df9a62dbec7f32f19a0b60ec0c114a|--default-library=static -Dhave_mingw_pthreads=false -Dtest=false"
+
+# sdl2 for ffplay
+"sdl2|autotools|https://www.libsdl.org/release/SDL2-2.32.10.tar.gz|-|--enable-shared=no --enable-system-iconv=no --disable-video-x11"
+)
+
+# FFmpeg --enable-* flags corresponding to the dependencies above.
+FFMPEG_ENABLE=(
+    --enable-zlib
+    --enable-lzma
+    --enable-iconv
+    --enable-libxml2
+    --enable-libsoxr
+    --enable-openssl
+    --enable-gmp
+    --enable-libssh
+    --enable-libsrt
+    --enable-librist
+    --enable-libmp3lame
+    --enable-libopus
+    --enable-libvorbis
+    --enable-libfreetype
+    --enable-libfribidi
+    --enable-libharfbuzz
+    --enable-libfontconfig
+    --enable-libass
+    --enable-libspeex
+    --enable-libtwolame
+    --enable-libshine
+    --enable-libopencore-amrnb
+    --enable-libopencore-amrwb
+    --enable-libsnappy
+    --enable-librubberband
+    --enable-libvmaf
+    --enable-libwebp
+    --enable-libopenjpeg
+    --enable-libjxl
+    --enable-libtheora
+    --enable-libzimg
+    --enable-libvidstab
+    --enable-libxvid
+    --enable-libx264
+    --enable-libx265
+    --enable-libopenh264
+    --enable-libkvazaar
+    --enable-libvvenc
+    --enable-libdavs2
+    --enable-libxavs2
+    --enable-libuavs3d
+    --enable-libdav1d
+    --enable-libvpx
+    --enable-libaom
+    --enable-libsvtav1
+)

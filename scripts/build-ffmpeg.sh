@@ -1,0 +1,114 @@
+#!/usr/bin/env bash
+# Build FFmpeg (ffmpeg, ffprobe, ffplay) against the static dependencies
+# previously built into $PREFIX by build-deps.sh.
+#
+# Third-party libraries are linked statically; only the core system libraries
+# (libc, libm, libgcc, libstdc++, libnuma) remain dynamic. Intended to run
+# inside the Ubuntu 24.04 build container (or natively on Ubuntu 24.04).
+set -euo pipefail
+
+HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=manifest.sh
+source "${HERE}/manifest.sh"
+# shellcheck source=common.sh
+source "${HERE}/common.sh"
+
+ensure_dirs
+
+src="$(fetch_and_extract "$FFMPEG_URL" ffmpeg "$FFMPEG_SHA256")"
+cd "$src"
+
+configure_args=(
+    --prefix="$OUT_DIR"
+    --pkg-config-flags="--static"
+    --extra-cflags="-I${PREFIX}/include"
+    --extra-ldflags="-L${PREFIX}/lib -L${PREFIX}/lib/x86_64-linux-gnu"
+    --disable-debug
+    --disable-doc
+    # Hermetic build: never auto-enable an external library just because it
+    # happens to be present on the host. Only the libraries we explicitly
+    # --enable below (all built statically into $PREFIX) are linked in. This
+    # guarantees the binaries stay free of host dependencies (e.g. X11 via
+    # libxcb/libX11, alsa, bzlib) without having to --disable each one, which
+    # is exactly what the portable, fully-static target needs.
+    --disable-autodetect
+    --enable-gpl
+    --enable-version3
+    --enable-nonfree
+    --enable-pthreads
+    --enable-runtime-cpudetect
+    --enable-ffmpeg
+    --enable-ffprobe
+    --enable-ffplay
+    --enable-sdl2
+)
+
+configure_args+=(
+    --enable-static
+    --disable-shared
+    --extra-libs="-lpthread -lm -ldl"
+)
+# Many of the statically-linked third-party libs are C++ (x265, harfbuzz,
+# snappy, zimg, vmaf, jxl, rubberband, vvenc, srt, opencore-amr, ...), so the
+# binaries need the C++ runtime. gcc links libstdc++/libgcc dynamically by
+# default, which couples the binary to the build host's GLIBCXX version and
+# breaks on servers with an older libstdc++. Fold both into the binary; they
+# carry the GCC Runtime Library Exception so static linking is fine to ship.
+configure_args+=(
+    --extra-ldflags="-static-libstdc++ -static-libgcc"
+)
+# NOTE: x265 is built with -DENABLE_LIBNUMA=OFF (see manifest.sh), so no
+# statically-linked dependency pulls in libnuma anymore and the binaries carry
+# no libnuma.so.1 dependency. No numa link flags are needed here.
+
+# Append the --enable-lib* flags declared in the manifest.
+configure_args+=( "${FFMPEG_ENABLE[@]}" )
+
+# Verify that pkg-config can find the required libraries before running
+# configure.  A missing .pc file is a common failure mode when a dependency
+# build succeeds but installs its pkg-config file to an unexpected path.
+log "checking pkg-config availability of enabled libraries..."
+MISSING_PCS=()
+for pc in libssh libsrt librist; do
+    if ! pkg-config --exists "$pc"; then
+        MISSING_PCS+=("$pc")
+        warn "pkg-config cannot find ${pc} (PKG_CONFIG_PATH=${PKG_CONFIG_PATH})"
+        # Show where the .pc file actually is on disk.
+        found=$(find "${PREFIX}/lib" -name "${pc}.pc" 2>/dev/null || true)
+        if [ -n "$found" ]; then
+            warn "  found .pc file at: ${found}"
+        else
+            # Look for alternative names (e.g. haivision-srt.pc for libsrt)
+            alt=$(find "${PREFIX}/lib" -name "*.pc" 2>/dev/null | while read -r f; do basename "$f"; done | sort -u || true)
+            if [ -n "$alt" ]; then
+                warn "  no ${pc}.pc found, but these .pc files exist:"
+                echo "$alt" | while read -r f; do warn "    ${f}"; done
+            else
+                warn "  no .pc files found under ${PREFIX}/lib"
+            fi
+        fi
+    fi
+done
+if [ ${#MISSING_PCS[@]} -gt 0 ]; then
+    die "missing pkg-config modules: ${MISSING_PCS[*]}. Check that the dependencies built and installed correctly."
+fi
+
+if ! ./configure "${configure_args[@]}"; then
+    echo "ERROR: ffmpeg configure failed; tail of ffbuild/config.log:" >&2
+    tail -40 ffbuild/config.log 2>/dev/null >&2 || true
+    exit 1
+fi
+
+make -j"$JOBS"
+make install
+
+log "FFmpeg installed into ${OUT_DIR}"
+log "dynamic dependencies of produced binaries:"
+for b in ffmpeg ffprobe ffplay; do
+    bin="${OUT_DIR}/bin/${b}"
+    [ -x "$bin" ] || { warn "missing ${b}"; continue; }
+    printf '  %-8s ' "$b"
+    echo "dynamic -> $(ldd "$bin" 2>/dev/null | grep -c '=>') shared libs"
+done
+
+"${OUT_DIR}/bin/ffmpeg" -version | head -1 || true

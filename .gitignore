@@ -1,0 +1,7 @@
+# All generated build artifacts live under dist/
+dist/
+
+# Misc temp files
+*.tmp
+
+Justfile
