@@ -50,12 +50,14 @@ configure_args+=(
 )
 # Many of the statically-linked third-party libs are C++ (x265, harfbuzz,
 # snappy, zimg, vmaf, jxl, rubberband, vvenc, srt, opencore-amr, ...), so the
-# binaries need the C++ runtime. gcc links libstdc++/libgcc dynamically by
+# binaries need the C++ runtime. Ubuntu's gcc links libstdc++ dynamically by
 # default, which couples the binary to the build host's GLIBCXX version and
-# breaks on servers with an older libstdc++. Fold both into the binary; they
-# carry the GCC Runtime Library Exception so static linking is fine to ship.
+# breaks on servers with an older libstdc++. Fold it into the binary; it carries
+# the GCC Runtime Library Exception so static linking is fine to ship.
+# (libgcc_s stays dynamic — the glibc/pthread unwinder pulls it in regardless,
+# so -static-libgcc has no effect and is omitted.)
 configure_args+=(
-    --extra-ldflags="-static-libstdc++ -static-libgcc"
+    --extra-ldflags="-static-libstdc++"
 )
 # NOTE: x265 is built with -DENABLE_LIBNUMA=OFF (see manifest.sh), so no
 # statically-linked dependency pulls in libnuma anymore and the binaries carry
