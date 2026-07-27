@@ -32,9 +32,14 @@ configure_args=(
     # libxcb/libX11, alsa, bzlib) without having to --disable each one, which
     # is exactly what the portable, fully-static target needs.
     --disable-autodetect
+    # License: GPLv3. --enable-gpl is required by librubberband, libvidstab,
+    # libx264, libx265 and libxvid; --enable-version3 by gmp and opencore-amr.
+    # --enable-nonfree is deliberately NOT set: nothing here needs it (FFmpeg's
+    # nonfree list is decklink, libfdk_aac, libmpeghdec, cuda_nvcc, cuda_sdk,
+    # libnpp) and setting it would make the binaries non-redistributable for
+    # no benefit. Adding any of those libraries means adding it back.
     --enable-gpl
     --enable-version3
-    --enable-nonfree
     --enable-pthreads
     --enable-runtime-cpudetect
     --enable-ffmpeg
