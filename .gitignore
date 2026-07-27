@@ -5,3 +5,6 @@ dist/
 *.tmp
 
 Justfile
+
+# Python bytecode from the maintenance scripts
+__pycache__/

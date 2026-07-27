@@ -276,29 +276,6 @@ post_install_fixup() {
                 ln -sf "${PREFIX}/lib/x86_64-linux-gnu/pkgconfig/librist.pc" "${PREFIX}/lib/pkgconfig/librist.pc"
             fi
             ;;
-        uavs3d)
-            # uavs3d's version scheme is major.minor.commit_count (from git).
-            # The v1.1 release tarball has version 1.1.0 because VER_BUILD=0
-            # (no git history). FFmpeg 8.1.2 requires uavs3d >= 1.1.41, so
-            # bump the pkg-config version to satisfy the version check.
-            local pc="${PREFIX}/lib/pkgconfig/uavs3d.pc"
-            if [ -f "$pc" ]; then
-                sed_inplace 's/^Version: .*/Version: 1.1.41/' "$pc"
-            fi
-            ;;
-        vmaf)
-            # libvmaf contains C++ code (svm.cpp) that needs -lstdc++, but
-            # its pkg-config file doesn't list it. Add it to Libs.private so
-            # consumers (FFmpeg's configure test) can link statically.
-            local pc="${PREFIX}/lib/pkgconfig/libvmaf.pc"
-            if [ -f "$pc" ] && ! grep -q -- '-lstdc++' "$pc"; then
-                if grep -q '^Libs.private:' "$pc"; then
-                    sed_inplace 's#^Libs.private:#Libs.private: -lstdc++#' "$pc"
-                else
-                    sed_inplace '/^Libs:/i Libs.private: -lstdc++' "$pc"
-                fi
-            fi
-            ;;
         jxl)
             # libjxl builds highway and brotli in third_party/ and installs
             # them alongside libjxl. The generated .pc files are correct —
@@ -327,27 +304,6 @@ pre_build_setup() {
             # (e.g. after a version bump/downgrade). Remove any previously
             # installed jxl headers so the build sees only its own tree.
             rm -rf "${PREFIX}/include/jxl"
-            ;;
-        uavs3d)
-            # uavs3d's CMakeLists.txt runs version.sh to generate version.h
-            # from git history, but tarballs extracted from git have no .git
-            # and no pre-generated version.h. Write a minimal version.h with
-            # a sufficient version (FFmpeg 8.1.2 requires >= 1.1.41).
-            local vh="${src}/../version.h"
-            if [ ! -f "$vh" ]; then
-                log "uavs3d: generating version.h (version 1.1.99)"
-                cat > "$vh" <<- 'EOF'
-				#ifndef __VERSION_H__
-				#define __VERSION_H__
-				#define VER_MAJOR  1
-				#define VER_MINOR  1
-				#define VER_BUILD  99
-				#define VERSION_TYPE "release"
-				#define VERSION_STR  "1.1.99"
-				#define VERSION_SHA1 ""
-				#endif
-				EOF
-            fi
             ;;
     esac
 }

@@ -46,7 +46,6 @@ DEPS=(
 "opencore-amr|autotools|https://downloads.sourceforge.net/project/opencore-amr/opencore-amr/opencore-amr-0.1.6.tar.gz|483eb4061088e2b34b358e47540b5d495a96cd468e361050fae615b1809dc4a1"
 "soxr|cmake|https://sourceforge.net/projects/soxr/files/soxr-0.1.3-Source.tar.xz|-|-DWITH_OPENMP=OFF -DBUILD_TESTS=OFF -DBUILD_EXAMPLES=OFF"
 "rubberband|meson|https://github.com/breakfastquay/rubberband/archive/refs/tags/v4.0.0.tar.gz|24300f48a8014b7c863b573a9647e61b1b19b37875e2cdd92005e64c6424d266"
-"vmaf|meson|https://github.com/Netflix/vmaf/archive/refs/tags/v3.2.0.tar.gz|a28f93f3b4fa65601be324587072e32a6a704a304ba7b1aec9b70b3f709bc1dc|-Denable_tests=false -Denable_docs=false -Denable_tools=false @SUBDIR:libvmaf@"
 "jxl|cmake|https://github.com/libjxl/libjxl/archive/refs/tags/v0.11.2.tar.gz|ab38928f7f6248e2a98cc184956021acb927b16a0dee71b4d260dc040a4320ea|-DPROVISION_DEPENDENCIES=ON -DBUILD_TESTING=OFF -DJPEGXL_ENABLE_TOOLS=OFF -DJPEGXL_ENABLE_DOXYGEN=OFF -DJPEGXL_ENABLE_MANPAGES=OFF -DJPEGXL_ENABLE_BENCHMARK=OFF -DJPEGXL_ENABLE_EXAMPLES=OFF -DJPEGXL_ENABLE_JNI=OFF -DJPEGXL_ENABLE_SJPEG=OFF -DJPEGXL_ENABLE_OPENEXR=OFF -DJPEGXL_ENABLE_VIEWERS=OFF -DJPEGXL_ENABLE_PLUGINS=OFF -DJPEGXL_ENABLE_DEVTOOLS=OFF -DJPEGXL_STATIC=ON"
 
 # text/subtitles (chain: freetype -> harfbuzz -> fontconfig -> libass)
@@ -68,26 +67,61 @@ DEPS=(
 "xvid|autotools|https://downloads.xvid.com/downloads/xvidcore-1.3.7.tar.gz|-|--disable-assembly @SUBDIR:build/generic@"
 
 # video codecs
-"x264|autotools|https://code.videolan.org/videolan/x264/-/archive/stable/x264-stable.tar.bz2|-|--enable-pic --disable-cli --disable-opencl"
+# x264 has never tagged a release — the upstream repo carries zero tags, so
+# every distro ships a git snapshot. Pin the exact commit Debian testing
+# packages (its 2:0.165.3223+git20250910.0480cb0 decodes to
+# 0.<X264_BUILD>.<commit-count>+git<date>.<commit>), not a branch name: a
+# branch URL makes the source non-reproducible and, because the stamp cache
+# keys off this manifest line, would also mean x264 never rebuilds.
+# Note this is master, which is where Debian takes its snapshot from; the
+# stable branch lags it. Both are X264_BUILD 165, so the ABI is the same.
+"x264|autotools|https://code.videolan.org/videolan/x264/-/archive/0480cb05fa188d37ae87e8f4fd8f1aea3711f7ee/x264-0480cb05fa188d37ae87e8f4fd8f1aea3711f7ee.tar.bz2|f05c59f2e83d494c36307025dca2d3afc6b4d185f3a3453d06cc4fecd7094057|--enable-pic --disable-cli --disable-opencl"
 "x265|cmake|https://bitbucket.org/multicoreware/x265_git/get/4.2.tar.gz|-|-DENABLE_CLI=OFF -DENABLE_PIC=ON -DEXPORT_C_API=ON -DENABLE_ASSEMBLY=OFF -DENABLE_LIBNUMA=OFF @SUBDIR:source@"
 "openh264|make|https://github.com/cisco/openh264/archive/refs/tags/v2.6.0.tar.gz|558544ad358283a7ab2930d69a9ceddf913f4a51ee9bf1bfb9e377322af81a69|OS=linux ARCH=x86_64 ENABLE64BIT=Yes PREFIX=@PREFIX@ @TARGET:libraries@ @INSTALL_TARGET:install-static@"
 "kvazaar|autotools|https://github.com/ultravideo/kvazaar/archive/refs/tags/v2.3.2.tar.gz|ddd0038696631ca5368d8e40efee36d2bbb805854b9b1dda8b12ea9b397ea951|--disable-shared"
-"vvenc|cmake|https://github.com/fraunhoferhhi/vvenc/archive/refs/tags/v1.12.0.tar.gz|-|-DVVENC_ENABLE_LINK_TIME_OPT=OFF -DBUILD_SHARED_LIBS=OFF"
-"davs2|autotools|https://github.com/pkuvcl/davs2/archive/refs/tags/1.7.tar.gz|-|--enable-pic @SUBDIR:build/linux@"
-"xavs2|autotools|https://github.com/pkuvcl/xavs2/archive/refs/tags/1.4.tar.gz|-|--enable-pic @SUBDIR:build/linux@"
-"uavs3d|cmake|https://github.com/uavs3/uavs3d/archive/0e20d2c291853f196c68922a264bcd8471d75b68.tar.gz|1c1eb778b6080bc01493180ea7ae671c6444ce3aa760b5d021ba882eb0f9e3a0|-DBUILD_SHARED_LIBS=OFF"
-"dav1d|meson|https://code.videolan.org/videolan/dav1d/-/archive/1.5.3/dav1d-1.5.3.tar.gz|cbe212b02faf8c6eed5b6d55ef8a6e363aaab83f15112e960701a9c3df813686|-Denable_tools=false -Denable_tests=false"
+"dav1d|meson|https://code.videolan.org/videolan/dav1d/-/archive/1.5.4/dav1d-1.5.4.tar.gz|a1d5b63d2d38ec9bd03acf643caa51fa22edd1e89c5a109c4807717216bbec07|-Denable_tools=false -Denable_tests=false"
 "vpx|autotools|https://github.com/webmproject/libvpx/archive/refs/tags/v1.16.0.tar.gz|7a479a3c66b9f5d5542a4c6a1b7d3768a983b1e5c14c60a9396edc9b649e015c|--enable-pic --disable-examples --disable-tools --disable-docs --disable-unit-tests --enable-vp8 --enable-vp9 --enable-vp9-highbitdepth"
 "aom|cmake|https://storage.googleapis.com/aom-releases/libaom-3.13.1.tar.gz|19e45a5a7192d690565229983dad900e76b513a02306c12053fb9a262cbeca7d|-DENABLE_DOCS=OFF -DENABLE_EXAMPLES=OFF -DENABLE_TESTS=OFF -DENABLE_TOOLS=OFF -DCONFIG_PIC=1"
 "svtav1|cmake|https://gitlab.com/AOMediaCodec/SVT-AV1/-/archive/v4.1.0/SVT-AV1-v4.1.0.tar.gz|6c4c0c44ff0ba3d136d6f57f3a707f9de8e9c866f50f809c1d22a43f0d8c9583|-DCMAKE_INTERPROCEDURAL_OPTIMIZATION=OFF -DBUILD_APPS=OFF -DBUILD_TESTING=OFF"
 
 # network/protocol (after openssl)
 "libssh|cmake|https://www.libssh.org/files/0.12/libssh-0.12.0.tar.xz|1a6af424d8327e5eedef4e5fe7f5b924226dd617ac9f3de80f217d82a36a7121|-DWITH_STATIC_LIB=ON -DWITH_EXAMPLES=OFF"
-"srt|cmake|https://github.com/Haivision/srt/archive/refs/tags/v1.5.5.tar.gz|c3518bc43a71b5289032395b2db4c3e09e73d78b54247d56c14553a503b491cf|-DENABLE_SHARED=OFF -DENABLE_STATIC=ON -DENABLE_APPS=OFF -DUSE_ENCLIB=openssl"
+"srt|cmake|https://github.com/Haivision/srt/archive/refs/tags/v1.5.6.tar.gz|2c4980c2c4cfd142d21b829d939dc51db9c6628af5967fff62fd7290769569c7|-DENABLE_SHARED=OFF -DENABLE_STATIC=ON -DENABLE_APPS=OFF -DUSE_ENCLIB=openssl"
 "librist|meson|https://code.videolan.org/rist/librist/-/archive/v0.2.18/librist-v0.2.18.tar.gz|9a2d16dcdb9fb067b7ba4259a3976ff6f8df9a62dbec7f32f19a0b60ec0c114a|--default-library=static -Dhave_mingw_pthreads=false -Dtest=false"
 
 # sdl2 for ffplay
 "sdl2|autotools|https://www.libsdl.org/release/SDL2-2.32.10.tar.gz|-|--enable-shared=no --enable-system-iconv=no --disable-video-x11"
+)
+
+# --- Debian source package names (used by scripts/deps-check-updates.py) ---
+# The versions above are pinned to what Debian testing ships. The script
+# verifies that by querying sources.debian.org, which indexes by *Debian source
+# package* name. That name usually equals the manifest name, so a dependency
+# missing from this table is looked up under its own name and only the
+# exceptions are listed:
+#
+#   name | debian-source-package     ("-" = not packaged in Debian at all)
+#
+# A "-" entry means the pinned version is ours to choose and track by hand —
+# it is reported as "untracked" rather than silently passing.
+DEBIAN_SRC=(
+# named differently in Debian
+"xz|xz-utils"
+"ogg|libogg"
+"vorbis|libvorbis"
+"soxr|libsoxr"
+"jxl|jpeg-xl"
+"xml2|libxml2"
+"webp|libwebp"
+"openjpeg|openjpeg2"
+"theora|libtheora"
+"vidstab|libvidstab"
+"xvid|xvidcore"
+"vpx|libvpx"
+"svtav1|svt-av1"
+"sdl2|libsdl2"
+# absent from Debian: no reference version to track against
+"libiconv|-"
 )
 
 # FFmpeg --enable-* flags corresponding to the dependencies above.
@@ -117,7 +151,6 @@ FFMPEG_ENABLE=(
     --enable-libopencore-amrwb
     --enable-libsnappy
     --enable-librubberband
-    --enable-libvmaf
     --enable-libwebp
     --enable-libopenjpeg
     --enable-libjxl
@@ -129,10 +162,6 @@ FFMPEG_ENABLE=(
     --enable-libx265
     --enable-libopenh264
     --enable-libkvazaar
-    --enable-libvvenc
-    --enable-libdavs2
-    --enable-libxavs2
-    --enable-libuavs3d
     --enable-libdav1d
     --enable-libvpx
     --enable-libaom

@@ -49,7 +49,7 @@ configure_args+=(
     --extra-libs="-lpthread -lm -ldl"
 )
 # Many of the statically-linked third-party libs are C++ (x265, harfbuzz,
-# snappy, zimg, vmaf, jxl, rubberband, vvenc, srt, opencore-amr, ...), so the
+# snappy, zimg, jxl, rubberband, srt, opencore-amr, ...), so the
 # binaries need the C++ runtime. Ubuntu's gcc links libstdc++ dynamically by
 # default, which couples the binary to the build host's GLIBCXX version and
 # breaks on servers with an older libstdc++. Fold it into the binary; it carries
