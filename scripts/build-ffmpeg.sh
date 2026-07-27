@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Build FFmpeg (ffmpeg, ffprobe, ffplay) against the static dependencies
+# Build FFmpeg (ffmpeg, ffprobe) against the static dependencies
 # previously built into $PREFIX by build-deps.sh.
 #
 # Third-party libraries are linked statically; only the core system libraries
@@ -39,8 +39,6 @@ configure_args=(
     --enable-runtime-cpudetect
     --enable-ffmpeg
     --enable-ffprobe
-    --enable-ffplay
-    --enable-sdl2
 )
 
 configure_args+=(
@@ -106,7 +104,7 @@ make install
 
 log "FFmpeg installed into ${OUT_DIR}"
 log "dynamic dependencies of produced binaries:"
-for b in ffmpeg ffprobe ffplay; do
+for b in ffmpeg ffprobe; do
     bin="${OUT_DIR}/bin/${b}"
     [ -x "$bin" ] || { warn "missing ${b}"; continue; }
     printf '  %-8s ' "$b"

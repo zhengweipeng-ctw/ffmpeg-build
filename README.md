@@ -1,6 +1,6 @@
 # ffmpeg-build
 
-Build a **statically-linked FFmpeg 8.1.2** (`ffmpeg`, `ffprobe`, `ffplay`) for
+Build a **statically-linked FFmpeg 8.1.2** (`ffmpeg`, `ffprobe`) for
 **Linux / x86_64 (amd64)**.
 
 All third-party libraries are compiled from source and linked statically, with
@@ -26,7 +26,11 @@ Builds the Ubuntu 24.04 image, then compiles all dependencies and FFmpeg inside
 it. Binaries land in `./dist/out/bin/`; caches and intermediates under `./dist/`.
 
 The binaries are **Linux/x86_64 executables** — they do not run on macOS. Copy
-`./dist/out/bin/{ffmpeg,ffprobe,ffplay}` to your Linux server.
+`./dist/out/bin/{ffmpeg,ffprobe}` to your Linux server.
+
+`ffplay` is deliberately not built: it exists only to open an SDL window,
+which a headless server cannot do, and it was the sole consumer of the SDL2
+dependency.
 
 > On Apple Silicon the amd64 image runs under emulation, so the first build is
 > slow. This is expected — the target is x86_64 Linux.

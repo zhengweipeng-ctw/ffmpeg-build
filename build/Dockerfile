@@ -3,7 +3,8 @@ FROM ubuntu:24.04
 
 ENV DEBIAN_FRONTEND=noninteractive
 
-# Toolchain + build systems + libs that ffmpeg links from the system (SDL2).
+# Toolchain and build systems only — every library ffmpeg links is built from
+# source into $PREFIX, so nothing here is linked into the binaries.
 RUN apt-get update && apt-get install -y --no-install-recommends \
         build-essential \
         ccache \

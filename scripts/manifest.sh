@@ -89,8 +89,6 @@ DEPS=(
 "srt|cmake|https://github.com/Haivision/srt/archive/refs/tags/v1.5.6.tar.gz|2c4980c2c4cfd142d21b829d939dc51db9c6628af5967fff62fd7290769569c7|-DENABLE_SHARED=OFF -DENABLE_STATIC=ON -DENABLE_APPS=OFF -DUSE_ENCLIB=openssl"
 "librist|meson|https://code.videolan.org/rist/librist/-/archive/v0.2.18/librist-v0.2.18.tar.gz|9a2d16dcdb9fb067b7ba4259a3976ff6f8df9a62dbec7f32f19a0b60ec0c114a|--default-library=static -Dhave_mingw_pthreads=false -Dtest=false"
 
-# sdl2 for ffplay
-"sdl2|autotools|https://www.libsdl.org/release/SDL2-2.32.10.tar.gz|-|--enable-shared=no --enable-system-iconv=no --disable-video-x11"
 )
 
 # --- Debian source package names (used by scripts/deps-check-updates.py) ---
@@ -119,7 +117,6 @@ DEBIAN_SRC=(
 "xvid|xvidcore"
 "vpx|libvpx"
 "svtav1|svt-av1"
-"sdl2|libsdl2"
 # absent from Debian: no reference version to track against
 "libiconv|-"
 )
