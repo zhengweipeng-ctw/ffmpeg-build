@@ -321,9 +321,11 @@ def check(dep: dict, debian_src: dict[str, str], codename: str) -> dict:
         if ours and theirs:
             row["pinned"] = pseudo_version(ours, forge_commit_date(dep["url"], ours))
             row["debian_upstream"] = pseudo_version(theirs, their_date)
-            row["status"] = OK if same_commit(ours, theirs) else BEHIND
-            row["note"] = ("same commit as Debian" if row["status"] == OK
-                           else f"Debian moved to {row['debian_upstream']}")
+            if same_commit(ours, theirs):
+                row["status"] = OK
+            else:
+                row["status"] = BEHIND
+                row["note"] = f"Debian moved to {row['debian_upstream']}"
             return row
         row["status"] = UNVERSIONED
         row["note"] = "URL pins a branch, not a version or commit"

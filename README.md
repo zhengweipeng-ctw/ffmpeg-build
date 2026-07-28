@@ -140,7 +140,7 @@ encodes the commit in its version (`2:0.165.3223+git20250910.0480cb0`, i.e.
 same commit in its URL, so the two are directly comparable:
 
 ```
-x264  20250910014056-0480cb05fa18  2:0.165.3223+git20250910.0480cb0-1  ok  (same commit as Debian)
+x264  20250910014056-0480cb05fa18  2:0.165.3223+git20250910.0480cb0-1  ok
 ```
 
 Commit pins are rendered the way Go writes pseudo-versions —
