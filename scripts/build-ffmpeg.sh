@@ -105,9 +105,14 @@ if ! ./configure "${configure_args[@]}"; then
 fi
 
 make -j"$JOBS"
-make install
+# install-progs, not install: we only ship the binaries. Plain `install` would
+# also drop the static libav* libraries, their headers, the .pc files and the
+# presets/examples under share/ into $OUT_DIR, none of which is deployed.
+# (In a static build install-progs pulls in no library install step, and doc is
+# disabled, so this installs exactly ffmpeg and ffprobe into $OUT_DIR/bin.)
+make install-progs
 
-log "FFmpeg installed into ${OUT_DIR}"
+log "FFmpeg binaries installed into ${OUT_DIR}/bin"
 log "dynamic dependencies of produced binaries:"
 for b in ffmpeg ffprobe; do
     bin="${OUT_DIR}/bin/${b}"
