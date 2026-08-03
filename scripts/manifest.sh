@@ -81,13 +81,13 @@ DEPS=(
 "kvazaar|autotools|https://github.com/ultravideo/kvazaar/archive/refs/tags/v2.3.2.tar.gz|ddd0038696631ca5368d8e40efee36d2bbb805854b9b1dda8b12ea9b397ea951|--disable-shared"
 "dav1d|meson|https://code.videolan.org/videolan/dav1d/-/archive/1.5.4/dav1d-1.5.4.tar.gz|a1d5b63d2d38ec9bd03acf643caa51fa22edd1e89c5a109c4807717216bbec07|-Denable_tools=false -Denable_tests=false"
 "vpx|autotools|https://github.com/webmproject/libvpx/archive/refs/tags/v1.16.0.tar.gz|7a479a3c66b9f5d5542a4c6a1b7d3768a983b1e5c14c60a9396edc9b649e015c|--enable-pic --disable-examples --disable-tools --disable-docs --disable-unit-tests --enable-vp8 --enable-vp9 --enable-vp9-highbitdepth"
-"aom|cmake|https://storage.googleapis.com/aom-releases/libaom-3.13.1.tar.gz|19e45a5a7192d690565229983dad900e76b513a02306c12053fb9a262cbeca7d|-DENABLE_DOCS=OFF -DENABLE_EXAMPLES=OFF -DENABLE_TESTS=OFF -DENABLE_TOOLS=OFF -DCONFIG_PIC=1"
+"aom|cmake|https://storage.googleapis.com/aom-releases/libaom-3.14.1.tar.gz|44bf90dbd23e734d50e70a8c41c285193922938bd0d3bc2ee56764d181d55ef5|-DENABLE_DOCS=OFF -DENABLE_EXAMPLES=OFF -DENABLE_TESTS=OFF -DENABLE_TOOLS=OFF -DCONFIG_PIC=1"
 "svtav1|cmake|https://gitlab.com/AOMediaCodec/SVT-AV1/-/archive/v4.1.0/SVT-AV1-v4.1.0.tar.gz|6c4c0c44ff0ba3d136d6f57f3a707f9de8e9c866f50f809c1d22a43f0d8c9583|-DCMAKE_INTERPROCEDURAL_OPTIMIZATION=OFF -DBUILD_APPS=OFF -DBUILD_TESTING=OFF"
 
 # network/protocol (after openssl)
-"libssh|cmake|https://www.libssh.org/files/0.12/libssh-0.12.0.tar.xz|1a6af424d8327e5eedef4e5fe7f5b924226dd617ac9f3de80f217d82a36a7121|-DWITH_STATIC_LIB=ON -DWITH_EXAMPLES=OFF"
+"libssh|cmake|https://www.libssh.org/files/0.12/libssh-0.12.2.tar.xz|49560f677d96e3706a904ac2de1116e25f3680937d51e5c92198fcba4a1c1e9f|-DWITH_STATIC_LIB=ON -DWITH_EXAMPLES=OFF"
 "srt|cmake|https://github.com/Haivision/srt/archive/refs/tags/v1.5.6.tar.gz|2c4980c2c4cfd142d21b829d939dc51db9c6628af5967fff62fd7290769569c7|-DENABLE_SHARED=OFF -DENABLE_STATIC=ON -DENABLE_APPS=OFF -DUSE_ENCLIB=openssl"
-"librist|meson|https://code.videolan.org/rist/librist/-/archive/v0.2.18/librist-v0.2.18.tar.gz|9a2d16dcdb9fb067b7ba4259a3976ff6f8df9a62dbec7f32f19a0b60ec0c114a|--default-library=static -Dhave_mingw_pthreads=false -Dtest=false"
+"librist|meson|https://code.videolan.org/rist/librist/-/archive/v0.2.20/librist-v0.2.20.tar.gz|9e40eeb87f014790531ad41326cc271b930a65962e4b15231b301fc59b29fe31|--default-library=static -Dhave_mingw_pthreads=false -Dtest=false"
 
 )
 
