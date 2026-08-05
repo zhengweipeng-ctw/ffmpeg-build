@@ -39,7 +39,7 @@ DEPS=(
 "ogg|autotools|https://downloads.xiph.org/releases/ogg/libogg-1.3.6.tar.gz|83e6704730683d004d20e21b8f7f55dcb3383cdf84c0daedf30bde175f774638"
 "vorbis|autotools|https://downloads.xiph.org/releases/vorbis/libvorbis-1.3.7.tar.gz|-|--with-ogg=@PREFIX@"
 "opus|autotools|https://github.com/xiph/opus/archive/refs/tags/v1.6.1.tar.gz|bf0b97ec7a65890b8db90ef94c4d6c18de12584c3085031953a10986f5917745|--disable-doc --disable-extra-programs"
-"lame|autotools|https://downloads.sourceforge.net/project/lame/lame/3.101/lame-3.101.tar.gz|7578af6eebd578b2bd64e468fac4ae1f03670a7e028166e67f855674b9b6aeac|--enable-nasm --disable-frontend --disable-decoder"
+"lame|autotools|https://downloads.sourceforge.net/project/lame/lame/4.0/lame-4.0.tar.gz|3df5124d5ad3a98312ffd7ba6a9b36230e4f8a3e66d3ce0f425e336c32d216eb|--enable-nasm --disable-frontend --disable-decoder"
 "speex|autotools|https://downloads.xiph.org/releases/speex/speex-1.2.1.tar.gz|-|--disable-examples"
 "twolame|autotools|https://sourceforge.net/projects/twolame/files/twolame/0.4.0/twolame-0.4.0.tar.gz|-|--disable-nls"
 "shine|autotools|https://github.com/savonet/shine/archive/refs/tags/3.1.1.tar.gz|-"
