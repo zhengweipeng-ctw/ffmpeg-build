@@ -7,7 +7,7 @@
 #   name | system | url | sha256 | extra-args...
 #
 #   name    short id, also used for --enable-lib<...> mapping
-#   system  one of: autotools | cmake | meson | openssl | make
+#   system  one of: autotools | cmake | meson | make
 #   url     source tarball URL
 #   sha256  expected checksum, or "-" to skip verification
 #   extra   space-separated extra configure/cmake/meson args (optional)
@@ -28,9 +28,7 @@ FFMPEG_SHA256="464beb5e7bf0c311e68b45ae2f04e9cc2af88851abb4082231742a74d97b524c"
 
 # --- Dependencies (build order matters) ---
 DEPS=(
-# crypto + core compression/encoding
-"openssl|openssl|https://www.openssl.org/source/openssl-3.6.3.tar.gz|243a86649cf6f23eeb6a2ff2456e09e5d77dd9018a54d3d96b0c6bdd6ba6c7f1|no-shared no-zlib no-tests"
-"gmp|autotools|https://gmplib.org/download/gmp/gmp-6.3.0.tar.xz|a3c2b80201b89e68616f4ad30bc66aee4927c3ce50e33929ca819d5c43538898|--enable-cxx --disable-fat"
+# core compression/encoding
 "zlib|autotools|https://zlib.net/fossils/zlib-1.3.2.tar.gz|bb329a0a2cd0274d05519d61c667c062e06990d72e125ee2dfa8de64f0119d16|@NO_STATIC@"
 "libiconv|autotools|https://ftp.gnu.org/pub/gnu/libiconv/libiconv-1.17.tar.gz|-"
 "xz|autotools|https://github.com/tukaani-project/xz/releases/download/v5.8.3/xz-5.8.3.tar.xz|fff1ffcf2b0da84d308a14de513a1aa23d4e9aa3464d17e64b9714bfdd0bbfb6|--disable-xz --disable-xzdec --disable-lzmadec --disable-lzmainfo --disable-scripts"
@@ -84,11 +82,6 @@ DEPS=(
 "aom|cmake|https://storage.googleapis.com/aom-releases/libaom-3.14.1.tar.gz|44bf90dbd23e734d50e70a8c41c285193922938bd0d3bc2ee56764d181d55ef5|-DENABLE_DOCS=OFF -DENABLE_EXAMPLES=OFF -DENABLE_TESTS=OFF -DENABLE_TOOLS=OFF -DCONFIG_PIC=1"
 "svtav1|cmake|https://gitlab.com/AOMediaCodec/SVT-AV1/-/archive/v4.1.0/SVT-AV1-v4.1.0.tar.gz|6c4c0c44ff0ba3d136d6f57f3a707f9de8e9c866f50f809c1d22a43f0d8c9583|-DCMAKE_INTERPROCEDURAL_OPTIMIZATION=OFF -DBUILD_APPS=OFF -DBUILD_TESTING=OFF"
 
-# network/protocol (after openssl)
-"libssh|cmake|https://www.libssh.org/files/0.12/libssh-0.12.2.tar.xz|49560f677d96e3706a904ac2de1116e25f3680937d51e5c92198fcba4a1c1e9f|-DWITH_STATIC_LIB=ON -DWITH_EXAMPLES=OFF"
-"srt|cmake|https://github.com/Haivision/srt/archive/refs/tags/v1.5.6.tar.gz|2c4980c2c4cfd142d21b829d939dc51db9c6628af5967fff62fd7290769569c7|-DENABLE_SHARED=OFF -DENABLE_STATIC=ON -DENABLE_APPS=OFF -DUSE_ENCLIB=openssl"
-"librist|meson|https://code.videolan.org/rist/librist/-/archive/v0.2.20/librist-v0.2.20.tar.gz|9e40eeb87f014790531ad41326cc271b930a65962e4b15231b301fc59b29fe31|--default-library=static -Dhave_mingw_pthreads=false -Dtest=false"
-
 )
 
 # --- Debian source package names (used by scripts/deps-check-updates.py) ---
@@ -128,11 +121,6 @@ FFMPEG_ENABLE=(
     --enable-iconv
     --enable-libxml2
     --enable-libsoxr
-    --enable-openssl
-    --enable-gmp
-    --enable-libssh
-    --enable-libsrt
-    --enable-librist
     --enable-libmp3lame
     --enable-libopus
     --enable-libvorbis

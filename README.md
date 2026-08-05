@@ -111,7 +111,7 @@ discovered years later:
 
 ```sh
 ./scripts/deps-check-updates.py                 # full table
-./scripts/deps-check-updates.py dav1d srt       # just these
+./scripts/deps-check-updates.py dav1d x265      # just these
 ./scripts/deps-check-updates.py --strict        # exit 1 if anything is behind Debian (CI)
 ./scripts/deps-check-updates.py --json          # machine-readable
 ```

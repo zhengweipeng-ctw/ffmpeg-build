@@ -80,15 +80,6 @@ build_meson() {
       ninja -C build install )
 }
 
-# OpenSSL uses its own Configure/config script, not autotools/cmake.
-build_openssl() {
-    local dir="$1"; shift
-    ( cd "$dir"
-      ./config --prefix="$PREFIX" --openssldir="${PREFIX}/etc/ssl" --libdir=lib "$@"
-      make -j"$JOBS"
-      make install_sw )
-}
-
 # Plain Makefile projects (e.g. openh264). Args are passed as make variables.
 # Supports @TARGET:xxx@ and @INSTALL_TARGET:xxx@ markers.
 build_make() {
@@ -143,7 +134,6 @@ build_dep() {
         autotools) build_autotools "$src" "${args[@]}" ;;
         cmake)     build_cmake "$src" "${args[@]}" ;;
         meson)     build_meson "$src" "${args[@]}" ;;
-        openssl)   build_openssl "$src" "${args[@]}" ;;
         make)      build_make "$src" "${args[@]}" ;;
         *)         die "unknown build system '$system' for '$name'" ;;
     esac
@@ -204,76 +194,6 @@ post_install_fixup() {
             if [ -d "${PREFIX}/lib/x86_64-linux-gnu/pkgconfig" ] && [ ! -e "${PREFIX}/lib/pkgconfig/liblzma.pc" ]; then
                 mkdir -p "${PREFIX}/lib/pkgconfig"
                 ln -sf "${PREFIX}/lib/x86_64-linux-gnu/pkgconfig/liblzma.pc" "${PREFIX}/lib/pkgconfig/liblzma.pc"
-            fi
-            ;;
-        libssh)
-            # libssh's pkg-config doesn't list openssl, which is needed for
-            # static linking. Add openssl to Libs.private.
-            #
-            # libssh's cmake may install the .pc file to the multiarch path
-            # (lib/x86_64-linux-gnu/pkgconfig). Symlink it to the standard
-            # lib/pkgconfig path so the fixup and pkg-config both find it.
-            if [ -f "${PREFIX}/lib/x86_64-linux-gnu/pkgconfig/libssh.pc" ] && [ ! -f "${PREFIX}/lib/pkgconfig/libssh.pc" ]; then
-                mkdir -p "${PREFIX}/lib/pkgconfig"
-                ln -sf "${PREFIX}/lib/x86_64-linux-gnu/pkgconfig/libssh.pc" "${PREFIX}/lib/pkgconfig/libssh.pc"
-            fi
-            local pc="${PREFIX}/lib/pkgconfig/libssh.pc"
-            if [ -f "$pc" ]; then
-                # libssh is built with zlib support by default, which pulls in
-                # deflate/inflate symbols. Ensure zlib is in Libs.private so
-                # consumers (FFmpeg's configure test) can link statically.
-                if ! grep -q -- '-lz' "$pc"; then
-                    if grep -q '^Libs.private:' "$pc"; then
-                        sed_inplace 's#^Libs.private:#Libs.private: -lz#' "$pc"
-                    else
-                        sed_inplace '/^Libs:/i Libs.private: -lz' "$pc"
-                    fi
-                fi
-                # Also ensure openssl libs are present (libssh uses crypto).
-                if ! grep -q -- '-lssl' "$pc"; then
-                    if grep -q '^Libs.private:' "$pc"; then
-                        sed_inplace 's#^Libs.private:#Libs.private: -lssl -lcrypto#' "$pc"
-                    else
-                        sed_inplace '/^Libs:/i Libs.private: -lssl -lcrypto' "$pc"
-                    fi
-                fi
-            else
-                warn "libssh.pc not found after install (expected at ${pc})"
-            fi
-            ;;
-        srt)
-            # srt's cmake may install the .pc file to the multiarch path.
-            # Symlink it to the standard path so pkg-config finds it.
-            for name in srt haisrt; do
-                if [ -f "${PREFIX}/lib/x86_64-linux-gnu/pkgconfig/${name}.pc" ] && [ ! -f "${PREFIX}/lib/pkgconfig/${name}.pc" ]; then
-                    mkdir -p "${PREFIX}/lib/pkgconfig"
-                    ln -sf "${PREFIX}/lib/x86_64-linux-gnu/pkgconfig/${name}.pc" "${PREFIX}/lib/pkgconfig/${name}.pc"
-                fi
-            done
-            # srt installs its .pc as srt.pc (or haisrt.pc), but FFmpeg's
-            # --enable-libsrt looks for libsrt.pc. Create the alias.
-            local actual=""
-            for name in srt haisrt; do
-                if [ -f "${PREFIX}/lib/pkgconfig/${name}.pc" ]; then
-                    actual="${name}.pc"
-                    break
-                fi
-                if [ -f "${PREFIX}/lib/x86_64-linux-gnu/pkgconfig/${name}.pc" ]; then
-                    mkdir -p "${PREFIX}/lib/pkgconfig"
-                    ln -sf "${PREFIX}/lib/x86_64-linux-gnu/pkgconfig/${name}.pc" "${PREFIX}/lib/pkgconfig/${name}.pc"
-                    actual="${name}.pc"
-                    break
-                fi
-            done
-            if [ -n "$actual" ] && [ ! -f "${PREFIX}/lib/pkgconfig/libsrt.pc" ]; then
-                ln -sf "$actual" "${PREFIX}/lib/pkgconfig/libsrt.pc"
-            fi
-            ;;
-        librist)
-            # librist's meson may install the .pc file to the multiarch path.
-            if [ -f "${PREFIX}/lib/x86_64-linux-gnu/pkgconfig/librist.pc" ] && [ ! -f "${PREFIX}/lib/pkgconfig/librist.pc" ]; then
-                mkdir -p "${PREFIX}/lib/pkgconfig"
-                ln -sf "${PREFIX}/lib/x86_64-linux-gnu/pkgconfig/librist.pc" "${PREFIX}/lib/pkgconfig/librist.pc"
             fi
             ;;
         jxl)

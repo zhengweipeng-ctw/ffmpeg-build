@@ -41,15 +41,13 @@ fi
 # sequentially. Order encodes dependency edges (see manifest.sh comments).
 BATCHES=(
     # No intra-dependencies among these; they can all build in parallel.
-    "openssl gmp zlib libiconv xz ogg lame opus freetype expat fribidi speex soxr twolame shine opencore-amr snappy xml2 rubberband jxl webp openjpeg zimg vidstab xvid x264 x265 openh264 kvazaar dav1d vpx aom svtav1 librist"
+    "zlib libiconv xz ogg lame opus freetype expat fribidi speex soxr twolame shine opencore-amr snappy xml2 rubberband jxl webp openjpeg zimg vidstab xvid x264 x265 openh264 kvazaar dav1d vpx aom svtav1"
     # vorbis needs ogg; harfbuzz needs freetype.
     "vorbis harfbuzz"
     # fontconfig needs freetype/expat/harfbuzz; theora needs ogg/vorbis.
     "fontconfig theora"
     # libass needs fontconfig/freetype/fribidi/harfbuzz.
     "libass"
-    # network protocols that need openssl.
-    "libssh srt"
 )
 
 # Build one dependency by name inside a parallel worker. Sources common.sh /
