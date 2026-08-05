@@ -19,7 +19,12 @@ src="$(fetch_and_extract "$FFMPEG_URL" ffmpeg "$FFMPEG_SHA256")"
 cd "$src"
 
 configure_args=(
-    --prefix="$OUT_DIR"
+    # The install root on the target host, not the staging directory here:
+    # configure bakes its whole argv into the binary as FFMPEG_CONFIGURATION
+    # (and $prefix/share/ffmpeg as the preset search path), so a build-tree
+    # path would ship in every `ffmpeg -version`. `make install-progs prefix=`
+    # below redirects where the binaries are actually written.
+    --prefix=/opt/ffmpeg
     --pkg-config-flags="--static"
     --disable-debug
     --disable-doc
@@ -79,7 +84,9 @@ make -j"$JOBS"
 # presets/examples under share/ into $OUT_DIR, none of which is deployed.
 # (In a static build install-progs pulls in no library install step, and doc is
 # disabled, so this installs exactly ffmpeg and ffprobe into $OUT_DIR/bin.)
-make install-progs
+# prefix= overrides only the install destination; config.mak resolves BINDIR as
+# ${prefix}/bin lazily, so the path compiled into the binary is unaffected.
+make install-progs prefix="$OUT_DIR"
 
 log "FFmpeg binaries installed into ${OUT_DIR}/bin"
 log "dynamic dependencies of produced binaries:"
