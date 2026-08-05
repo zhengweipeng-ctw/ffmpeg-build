@@ -31,7 +31,7 @@ configure_args=(
     # is exactly what the portable, fully-static target needs.
     --disable-autodetect
     # License: GPLv3. --enable-gpl is required by librubberband, libvidstab,
-    # libx264, libx265 and libxvid; --enable-version3 by gmp and opencore-amr.
+    # libx264, libx265 and libxvid; --enable-version3 by opencore-amr.
     # --enable-nonfree is deliberately NOT set: nothing here needs it (FFmpeg's
     # nonfree list is decklink, libfdk_aac, libmpeghdec, cuda_nvcc, cuda_sdk,
     # libnpp) and setting it would make the binaries non-redistributable for
@@ -50,7 +50,7 @@ configure_args+=(
     --extra-libs="-lpthread -lm -ldl"
 )
 # Many of the statically-linked third-party libs are C++ (x265, harfbuzz,
-# snappy, zimg, jxl, rubberband, srt, opencore-amr, ...), so the
+# snappy, zimg, jxl, rubberband, opencore-amr, ...), so the
 # binaries need the C++ runtime. Ubuntu's gcc links libstdc++ dynamically by
 # default, which couples the binary to the build host's GLIBCXX version and
 # breaks on servers with an older libstdc++. Fold it into the binary; it carries
@@ -66,35 +66,6 @@ configure_args+=(
 
 # Append the --enable-lib* flags declared in the manifest.
 configure_args+=( "${FFMPEG_ENABLE[@]}" )
-
-# Verify that pkg-config can find the required libraries before running
-# configure.  A missing .pc file is a common failure mode when a dependency
-# build succeeds but installs its pkg-config file to an unexpected path.
-log "checking pkg-config availability of enabled libraries..."
-MISSING_PCS=()
-for pc in libssh libsrt librist; do
-    if ! pkg-config --exists "$pc"; then
-        MISSING_PCS+=("$pc")
-        warn "pkg-config cannot find ${pc} (PKG_CONFIG_PATH=${PKG_CONFIG_PATH})"
-        # Show where the .pc file actually is on disk.
-        found=$(find "${PREFIX}/lib" -name "${pc}.pc" 2>/dev/null || true)
-        if [ -n "$found" ]; then
-            warn "  found .pc file at: ${found}"
-        else
-            # Look for alternative names (e.g. haivision-srt.pc for libsrt)
-            alt=$(find "${PREFIX}/lib" -name "*.pc" 2>/dev/null | while read -r f; do basename "$f"; done | sort -u || true)
-            if [ -n "$alt" ]; then
-                warn "  no ${pc}.pc found, but these .pc files exist:"
-                echo "$alt" | while read -r f; do warn "    ${f}"; done
-            else
-                warn "  no .pc files found under ${PREFIX}/lib"
-            fi
-        fi
-    fi
-done
-if [ ${#MISSING_PCS[@]} -gt 0 ]; then
-    die "missing pkg-config modules: ${MISSING_PCS[*]}. Check that the dependencies built and installed correctly."
-fi
 
 if ! ./configure "${configure_args[@]}"; then
     echo "ERROR: ffmpeg configure failed; tail of ffbuild/config.log:" >&2

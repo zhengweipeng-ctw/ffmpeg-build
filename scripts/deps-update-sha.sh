@@ -14,7 +14,7 @@
 # anything and touches nothing but manifest.sh.
 #
 # Usage:
-#   scripts/deps-update-sha.sh dav1d srt      # refresh these
+#   scripts/deps-update-sha.sh dav1d x265     # refresh these
 #   scripts/deps-update-sha.sh --all          # every dependency with a pinned sha
 #   scripts/deps-update-sha.sh --force x264   # also (re)pin a "-" entry
 #   scripts/deps-update-sha.sh --check dav1d  # report mismatches, change nothing
