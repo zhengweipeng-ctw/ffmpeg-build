@@ -1,6 +1,6 @@
 # ffmpeg-build
 
-Build a **statically-linked FFmpeg 8.1.2** (`ffmpeg`, `ffprobe`) for
+Build a **statically-linked FFmpeg 9.0** (`ffmpeg`, `ffprobe`) for
 **Linux / x86_64 (amd64)**.
 
 All third-party libraries are compiled from source and linked statically, with
