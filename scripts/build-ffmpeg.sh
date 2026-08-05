@@ -21,8 +21,6 @@ cd "$src"
 configure_args=(
     --prefix="$OUT_DIR"
     --pkg-config-flags="--static"
-    --extra-cflags="-I${PREFIX}/include"
-    --extra-ldflags="-L${PREFIX}/lib -L${PREFIX}/lib/x86_64-linux-gnu"
     --disable-debug
     --disable-doc
     # Hermetic build: never auto-enable an external library just because it
