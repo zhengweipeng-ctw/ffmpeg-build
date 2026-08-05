@@ -60,8 +60,11 @@ fi
 export PKG_CONFIG_PATH="${PREFIX}/lib/pkgconfig:${PREFIX}/lib/x86_64-linux-gnu/pkgconfig"
 export PATH="${PREFIX}/bin:${PATH}"
 
-export CFLAGS="-I${PREFIX}/include ${CFLAGS:-} -O2 -fPIC"
-export CXXFLAGS="-I${PREFIX}/include ${CXXFLAGS:-} -O2 -fPIC"
+# -ffile-prefix-map rewrites __FILE__ (and debug paths) so that assert/log
+# strings compiled into a dependency say ./svtav1/... instead of the build
+# tree's /work/obj/svtav1/..., which would otherwise ship in every binary.
+export CFLAGS="-I${PREFIX}/include ${CFLAGS:-} -O2 -fPIC -ffile-prefix-map=${BUILD_DIR}=."
+export CXXFLAGS="-I${PREFIX}/include ${CXXFLAGS:-} -O2 -fPIC -ffile-prefix-map=${BUILD_DIR}=."
 export LDFLAGS="-L${PREFIX}/lib -L${PREFIX}/lib/x86_64-linux-gnu ${LDFLAGS:-}"
 
 log()  { printf '\033[1;34m==>\033[0m %s\n' "$*" >&2; }

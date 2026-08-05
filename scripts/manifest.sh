@@ -51,12 +51,12 @@ DEPS=(
 "expat|autotools|https://github.com/libexpat/libexpat/releases/download/R_2_8_2/expat-2.8.2.tar.xz|3ad89b8588e6644bd4e49981480d48b21289eebbcd4f0a1a4afb1c29f99b6ab4"
 "fribidi|autotools|https://github.com/fribidi/fribidi/releases/download/v1.0.16/fribidi-1.0.16.tar.xz|-"
 "harfbuzz|cmake|https://github.com/harfbuzz/harfbuzz/releases/download/12.3.2/harfbuzz-12.3.2.tar.xz|6f6db164359a2da5a84ef826615b448b33e6306067ad829d85d5b0bf936f1bb8|-DHB_HAVE_FREETYPE=ON -DHB_BUILD_TESTS=OFF -DHB_BUILD_EXAMPLES=OFF -DHB_BUILD_UTILS=OFF"
-"fontconfig|autotools|https://gitlab.freedesktop.org/fontconfig/fontconfig/-/archive/2.17.1/fontconfig-2.17.1.tar.gz|82e73b26adad651b236e5f5d4b3074daf8ff0910188808496326bd3449e5261d|--disable-docs"
+"fontconfig|autotools|https://gitlab.freedesktop.org/fontconfig/fontconfig/-/archive/2.17.1/fontconfig-2.17.1.tar.gz|82e73b26adad651b236e5f5d4b3074daf8ff0910188808496326bd3449e5261d|--disable-docs --sysconfdir=/etc --localstatedir=/var"
 "libass|autotools|https://github.com/libass/libass/releases/download/0.17.5/libass-0.17.5.tar.xz|2dca25c0e0c837ddf00b52011b3f82cac1e4ddd3ad018227806b0c2288864acc"
 
 # misc
 "snappy|cmake|https://github.com/google/snappy/archive/refs/tags/1.2.2.tar.gz|90f74bc1fbf78a6c56b3c4a082a05103b3a56bb17bca1a27e052ea11723292dc|-DSNAPPY_BUILD_TESTS=OFF -DSNAPPY_BUILD_BENCHMARKS=OFF"
-"xml2|autotools|https://download.gnome.org/sources/libxml2/2.15/libxml2-2.15.3.tar.xz|78262a6e7ac170d6528ebfe2efccdf220191a5af6a6cd61ea4a9a9a5042c7a07|--without-python --without-lzma --without-zlib"
+"xml2|autotools|https://download.gnome.org/sources/libxml2/2.15/libxml2-2.15.3.tar.xz|78262a6e7ac170d6528ebfe2efccdf220191a5af6a6cd61ea4a9a9a5042c7a07|--without-python --without-lzma --without-zlib --sysconfdir=/etc"
 "webp|cmake|https://github.com/webmproject/libwebp/archive/refs/tags/v1.5.0.tar.gz|668c9aba45565e24c27e17f7aaf7060a399f7f31dba6c97a044e1feacb930f37|-DWEBP_BUILD_ANIMATIONS=OFF -DWEBP_BUILD_EXTRAS=OFF -DWEBP_BUILD_GIF2WEBP=OFF -DWEBP_BUILD_IMG2WEBP=OFF -DWEBP_BUILD_VWEBP=OFF -DWEBP_BUILD_WEBPINFO=OFF -DWEBP_BUILD_LIBWEBPMUX=OFF"
 "openjpeg|cmake|https://github.com/uclouvain/openjpeg/archive/refs/tags/v2.5.4.tar.gz|a695fbe19c0165f295a8531b1e4e855cd94d0875d2f88ec4b61080677e27188a|-DBUILD_CODEC=OFF -DBUILD_TESTING=OFF -DBUILD_DOC=OFF"
 "theora|autotools|https://downloads.xiph.org/releases/theora/libtheora-1.2.0.tar.gz|279327339903b544c28a92aeada7d0dcfd0397b59c2f368cc698ac56f515906e|--with-ogg=@PREFIX@ --with-vorbis=@PREFIX@ --disable-examples --disable-oggtest --disable-vorbistest"
