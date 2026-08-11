@@ -12,8 +12,11 @@ matching source package carries in testing.
 Nothing here touches the build: it is a read-only reporting tool, safe to run
 from a laptop or CI. Requires only Python 3 stdlib and network access.
 
+FFmpeg itself is checked the same way but reported on its own line above the
+table: it is what this repo builds, not one of its dependencies.
+
 Usage:
-    scripts/deps-check-updates.py             # table for every dependency
+    scripts/deps-check-updates.py             # ffmpeg, then a table of the deps
     scripts/deps-check-updates.py x264 dav1d  # only these
     scripts/deps-check-updates.py --strict    # exit 1 if anything is behind Debian
     scripts/deps-check-updates.py --json      # machine-readable, for CI
@@ -61,16 +64,22 @@ def _array_entries(text: str, name: str) -> list[str]:
     return re.findall(r'^"(.*)"\s*$', m.group(1), re.M)
 
 
-def parse_manifest(path: str) -> tuple[list[dict], dict[str, str]]:
+def parse_manifest(path: str) -> tuple[dict | None, list[dict], dict[str, str]]:
+    """Return (ffmpeg, deps, debian_src).
+
+    FFmpeg is what this repo builds, not something it builds *against*, so it is
+    kept apart from the dependency list and reported on its own.
+    """
     with open(path, encoding="utf-8") as fh:
         text = fh.read()
 
-    deps = []
+    ffmpeg = None
     fv = re.search(r'^FFMPEG_VERSION="([^"]+)"', text, re.M)
     if fv:
-        deps.append({"name": "ffmpeg", "url": "", "pinned": fv.group(1),
-                     "commit": None})
+        ffmpeg = {"name": "ffmpeg", "url": "", "pinned": fv.group(1),
+                  "commit": None}
 
+    deps = []
     for line in _array_entries(text, "DEPS"):
         fields = line.split("|")
         if len(fields) < 3:
@@ -88,7 +97,7 @@ def parse_manifest(path: str) -> tuple[list[dict], dict[str, str]]:
         dep, _, pkg = line.partition("|")
         debian_src[dep.strip()] = pkg.strip()
 
-    return deps, debian_src
+    return ffmpeg, deps, debian_src
 
 
 ARCHIVE_EXT = re.compile(r"\.(?:tar\.(?:gz|xz|bz2)|tgz|tbz2|zip)$")
@@ -343,6 +352,18 @@ def paint(text: str, status: str, enabled: bool) -> str:
     return f"\033[{code}m{text}\033[0m" if enabled and code else text
 
 
+def print_ffmpeg(row: dict, codename: str, color: bool) -> None:
+    """Report FFmpeg itself, above and apart from the dependency table."""
+    line = (
+        f"{row['name']} {row['pinned'] or '-'}  "
+        f"debian/{codename} {row['debian_version'] or '-'}  "
+        f"{paint(row['status'], row['status'], color)}"
+    )
+    if row["note"]:
+        line += f"  ({row['note']})"
+    print(line)
+
+
 def print_table(rows: list[dict], codename: str, color: bool) -> None:
     widths = {
         "name": max(4, *(len(r["name"]) for r in rows)),
@@ -381,18 +402,23 @@ def main() -> int:
     ap.add_argument("--jobs", type=int, default=8, help="concurrent HTTP requests (default: 8)")
     args = ap.parse_args()
 
-    deps, debian_src = parse_manifest(MANIFEST)
+    ffmpeg, deps, debian_src = parse_manifest(MANIFEST)
     if not deps:
         print(f"ERROR: no dependencies parsed from {MANIFEST}", file=sys.stderr)
         return 2
 
     if args.deps:
         wanted = set(args.deps)
-        unknown = wanted - {d["name"] for d in deps}
+        known = {d["name"] for d in deps}
+        if ffmpeg:
+            known.add(ffmpeg["name"])
+        unknown = wanted - known
         if unknown:
             print(f"ERROR: unknown dependencies: {', '.join(sorted(unknown))}", file=sys.stderr)
             return 2
         deps = [d for d in deps if d["name"] in wanted]
+        if ffmpeg and ffmpeg["name"] not in wanted:
+            ffmpeg = None
 
     try:
         codename = resolve_codename(args.suite)
@@ -400,26 +426,36 @@ def main() -> int:
         print(f"ERROR: {exc}", file=sys.stderr)
         return 2
 
+    targets = ([ffmpeg] if ffmpeg else []) + deps
     with ThreadPoolExecutor(max_workers=args.jobs) as pool:
-        rows = list(pool.map(lambda d: check(d, debian_src, codename), deps))
+        checked = list(pool.map(lambda d: check(d, debian_src, codename), targets))
+    ffmpeg_row = checked[0] if ffmpeg else None
+    rows = checked[1:] if ffmpeg else checked
 
     if args.json:
-        json.dump({"suite": args.suite, "codename": codename, "results": rows},
+        json.dump({"suite": args.suite, "codename": codename,
+                   "ffmpeg": ffmpeg_row, "results": rows},
                   sys.stdout, indent=2)
         print()
     else:
-        print_table(rows, codename, color=sys.stdout.isatty())
-        counts = {}
-        for r in rows:
-            counts[r["status"]] = counts.get(r["status"], 0) + 1
-        summary = ", ".join(f"{counts[s]} {s}" for s in
-                            (BEHIND, AHEAD, OK, UNTRACKED, UNVERSIONED, ERROR) if s in counts)
-        noun = "dependency" if len(rows) == 1 else "dependencies"
-        print(f"\n{len(rows)} {noun}: {summary}")
+        color = sys.stdout.isatty()
+        if ffmpeg_row:
+            print_ffmpeg(ffmpeg_row, codename, color)
+            if rows:
+                print()
+        if rows:
+            print_table(rows, codename, color)
+            counts = {}
+            for r in rows:
+                counts[r["status"]] = counts.get(r["status"], 0) + 1
+            summary = ", ".join(f"{counts[s]} {s}" for s in
+                                (BEHIND, AHEAD, OK, UNTRACKED, UNVERSIONED, ERROR) if s in counts)
+            noun = "dependency" if len(rows) == 1 else "dependencies"
+            print(f"\n{len(rows)} {noun}: {summary}")
 
-    if any(r["status"] == ERROR for r in rows):
+    if any(r["status"] == ERROR for r in checked):
         return 2
-    if args.strict and any(r["status"] == BEHIND for r in rows):
+    if args.strict and any(r["status"] == BEHIND for r in checked):
         return 1
     return 0
 

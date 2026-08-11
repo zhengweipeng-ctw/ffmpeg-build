@@ -117,7 +117,7 @@ moves and the manifest does not, so the drift needs to be visible rather than
 discovered years later:
 
 ```sh
-./scripts/deps-check-updates.py                 # full table
+./scripts/deps-check-updates.py                 # ffmpeg, then the full dep table
 ./scripts/deps-check-updates.py dav1d x265      # just these
 ./scripts/deps-check-updates.py --strict        # exit 1 if anything is behind Debian (CI)
 ./scripts/deps-check-updates.py --json          # machine-readable
@@ -126,6 +126,11 @@ discovered years later:
 It resolves the current testing codename from `deb.debian.org` (so it does not
 rot when testing rolls over), then asks `sources.debian.org` for each source
 package. Read-only, stdlib-only Python 3, no network access during a build.
+
+FFmpeg is checked the same way but reported on its own line above the table
+(and under a separate `ffmpeg` key in `--json`) — it is what this repo builds,
+not one of the libraries it builds against, so it does not belong in the
+dependency list or its counts.
 
 Each dependency lands in one of five states:
 
