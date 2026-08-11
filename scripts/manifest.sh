@@ -30,7 +30,6 @@ FFMPEG_SHA256="7f607a00dd0d28a729d5a4811205812eef01cf6ef6155025febb6f36a9062d52"
 DEPS=(
 # core compression/encoding
 "zlib|autotools|https://zlib.net/fossils/zlib-1.3.2.tar.gz|bb329a0a2cd0274d05519d61c667c062e06990d72e125ee2dfa8de64f0119d16|@NO_STATIC@"
-"libiconv|autotools|https://ftp.gnu.org/pub/gnu/libiconv/libiconv-1.17.tar.gz|-"
 "xz|autotools|https://github.com/tukaani-project/xz/releases/download/v5.8.3/xz-5.8.3.tar.xz|fff1ffcf2b0da84d308a14de513a1aa23d4e9aa3464d17e64b9714bfdd0bbfb6|--disable-xz --disable-xzdec --disable-lzmadec --disable-lzmainfo --disable-scripts"
 
 # audio
@@ -110,8 +109,6 @@ DEBIAN_SRC=(
 "xvid|xvidcore"
 "vpx|libvpx"
 "svtav1|svt-av1"
-# absent from Debian: no reference version to track against
-"libiconv|-"
 )
 
 # FFmpeg --enable-* flags corresponding to the dependencies above.

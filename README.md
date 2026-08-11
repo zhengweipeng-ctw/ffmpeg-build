@@ -14,6 +14,13 @@ supported floor, though the highest symbol version the binaries actually
 reference is currently 2.38 (`objdump -T bin/ffmpeg | grep -o 'GLIBC_[0-9.]*' |
 sort -uV | tail -1`).
 
+Character-set conversion (`--enable-iconv`, used to recode non-UTF-8 subtitles
+via `-sub_charenc` and the `subtitles` filter's `charenc`) comes from glibc's
+built-in iconv rather than a bundled GNU libiconv. The encoding tables are the
+host's gconv modules, loaded at runtime: Debian/Ubuntu ship the full set inside
+libc6, so they are always present there; RHEL-family minimal installs keep only
+the UTF/Latin tables and need `glibc-gconv-extra` for CJK encodings.
+
 ## Quick start
 
 ### macOS (via container)
@@ -150,10 +157,6 @@ are recognised); if the forge is unknown or unreachable the bare commit is
 shown instead, and the comparison is unaffected either way since it matches on
 the commit. The row flips to `behind` with Debian's new pseudo-version when
 Debian rebases its snapshot. Only a *branch* URL is genuinely `unversioned`.
-
-That leaves `libiconv` as the one dependency to watch by hand — it is
-`untracked` because glibc provides iconv, so Debian never packages GNU libiconv
-separately.
 
 Bumping a version is two steps — edit the URL in `DEPS`, then let the checksum
 follow:
