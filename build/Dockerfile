@@ -1,4 +1,3 @@
-# Ubuntu 24.04 build environment for statically-linked FFmpeg 9.0.1.
 FROM ubuntu:24.04
 
 ENV DEBIAN_FRONTEND=noninteractive
