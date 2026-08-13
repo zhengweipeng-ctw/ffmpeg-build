@@ -26,14 +26,15 @@ the UTF/Latin tables and need `glibc-gconv-extra` for CJK encodings.
 ### macOS (via container)
 
 ```sh
-./build/build-in-container.sh
+./container/build-in-container.sh
 ```
 
 Builds the Ubuntu 24.04 image, then compiles all dependencies and FFmpeg inside
-it. Binaries land in `./dist/out/bin/`; caches and intermediates under `./dist/`.
+it. Binaries land in `.build/out/bin/`; caches and intermediates under
+`.build/`.
 
 The binaries are **Linux/x86_64 executables** — they do not run on macOS. Copy
-`./dist/out/bin/{ffmpeg,ffprobe}` to your Linux server.
+`.build/out/bin/{ffmpeg,ffprobe}` to your Linux server.
 
 `ffplay` is deliberately not built: it exists only to open an SDL window,
 which a headless server cannot do, and it was the sole consumer of the SDL2
@@ -44,7 +45,7 @@ dependency.
 
 ### Linux (native)
 
-Install the apt dependencies listed in `build/Dockerfile`, then:
+Install the apt dependencies listed in `container/Dockerfile`, then:
 
 ```sh
 ./scripts/build.sh          # full build (all deps + ffmpeg)
@@ -54,13 +55,13 @@ Install the apt dependencies listed in `build/Dockerfile`, then:
 
 Two entry points, one build implementation:
 
-- **`build/build-in-container.sh`** (macOS) only builds the image and runs
+- **`container/build-in-container.sh`** (macOS) only builds the image and runs
   `scripts/build.sh` inside it — no macOS-specific build logic.
 - **`scripts/build.sh`** (Linux) does the actual work and knows nothing about
   containers. It runs `build-deps.sh` (all static dependencies) then
   `build-ffmpeg.sh` (FFmpeg linked against them).
 
-All output goes under `./dist/` by default; override with the `WORK_DIR`
+All output goes under `.build/` by default; override with the `WORK_DIR`
 environment variable.
 
 Adding a library is declarative — no new files:
@@ -76,7 +77,7 @@ version check below can find it.
 ## Build a subset of dependencies
 
 ```sh
-./build/build-in-container.sh x264 x265                # only these deps, in the container
+./container/build-in-container.sh x264 x265            # only these deps, in the container
 WORK_DIR=$PWD/work ./scripts/build-deps.sh x264 x265   # same, natively
 ```
 
@@ -89,25 +90,25 @@ arguments** for the full build that also compiles FFmpeg.
 
 Three mechanisms keep rebuilds fast:
 
-**ccache** — compilation is cached in `dist/ccache/` (mounted into the container
-as `/ccache`), so it survives container teardown. `CC`/`CXX` are wrapped as
-`ccache gcc` / `ccache g++`, which all three build systems (autotools, cmake,
-meson) honor. Inspect with `ccache -d dist/ccache -s`; wipe with
-`rm -rf dist/ccache`.
+**ccache** — compilation is cached in `.build/ccache/` (mounted into the
+container as `/ccache`), so it survives container teardown. `CC`/`CXX` are
+wrapped as `ccache gcc` / `ccache g++`, which all three build systems
+(autotools, cmake, meson) honor. Inspect with `ccache -d .build/ccache -s`;
+wipe with `rm -rf .build/ccache`.
 
 **Dependency stamps** — each dependency records its manifest line
-(version/url/flags) in `dist/prefix/stamps/<name>.stamp`. On rebuild a matching
-stamp skips the dependency entirely (no re-extract, reconfigure, or recompile);
-changing a version or flag invalidates just that one. Force a rebuild of
-everything with `rm -rf dist/prefix/stamps`, or of one dependency with
-`rm dist/prefix/stamps/<name>.stamp`.
+(version/url/flags) in `.build/prefix/stamps/<name>.stamp`. On rebuild a
+matching stamp skips the dependency entirely (no re-extract, reconfigure, or
+recompile); changing a version or flag invalidates just that one. Force a
+rebuild of everything with `rm -rf .build/prefix/stamps`, or of one dependency
+with `rm .build/prefix/stamps/<name>.stamp`.
 
 **Parallel builds** — within a dependency, `make -j` / `ninja -j` uses `JOBS`
 (default: the host core count); across dependencies, independent ones build in
 parallel (`DEP_JOBS`, default 2) in batches, with the
 `freetype → harfbuzz → fontconfig → libass` and `ogg → vorbis → theora` chains
-serialized. Tune with `JOBS=10 DEP_JOBS=4 ./build/build-in-container.sh` (raise
-`DEP_JOBS` if you have RAM to spare; lower `JOBS` if linking OOMs); set
+serialized. Tune with `JOBS=10 DEP_JOBS=4 ./container/build-in-container.sh`
+(raise `DEP_JOBS` if you have RAM to spare; lower `JOBS` if linking OOMs); set
 `MEM_BASED_JOBS=1` for a memory-capped job count.
 
 ## Keeping versions current

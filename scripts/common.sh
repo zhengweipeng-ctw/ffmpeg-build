@@ -18,9 +18,9 @@ sha256_of() {
 }
 
 # Layout (overridable via environment). All generated artifacts live under
-# one tree (dist/) so the repo root stays clean.
+# one tree (.build/) so the repo root stays clean.
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-: "${WORK_DIR:=${REPO_ROOT}/dist}"
+: "${WORK_DIR:=${REPO_ROOT}/.build}"
 : "${SRC_DIR:=${WORK_DIR}/src}"       # cached source tarballs
 : "${BUILD_DIR:=${WORK_DIR}/obj}"     # extracted + compiled sources
 : "${PREFIX:=${WORK_DIR}/prefix}"     # staging prefix for static deps

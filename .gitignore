@@ -1,5 +1,5 @@
-# All generated build artifacts live under dist/
-dist/
+# All generated build artifacts live under .build/
+.build/
 
 # Misc temp files
 *.tmp
