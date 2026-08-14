@@ -19,12 +19,12 @@ src="$(fetch_and_extract "$FFMPEG_URL" ffmpeg "$FFMPEG_SHA256")"
 cd "$src"
 
 configure_args=(
-    # The install root on the target host, not the staging directory here:
-    # configure bakes its whole argv into the binary as FFMPEG_CONFIGURATION
-    # (and $prefix/share/ffmpeg as the preset search path), so a build-tree
-    # path would ship in every `ffmpeg -version`. `make install-progs prefix=`
-    # below redirects where the binaries are actually written.
-    --prefix=/opt/ffmpeg
+    # The declared install root, shown in `ffmpeg -version` (FFMPEG_CONFIGURATION)
+    # and used as the preset search path ($prefix/share/ffmpeg). Not the staging
+    # directory here: `make install-progs prefix=` below redirects where the
+    # binaries are actually written. It is independent of the server deploy
+    # path (see Justfile) — this is deliberately just the declared prefix.
+    --prefix=/usr/local
     --pkg-config-flags="--static"
     --disable-debug
     --disable-doc
