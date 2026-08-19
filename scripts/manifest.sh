@@ -47,7 +47,7 @@ DEPS=(
 
 # text/subtitles (chain: freetype -> harfbuzz -> fontconfig -> libass)
 "freetype|autotools|https://downloads.sourceforge.net/project/freetype/freetype2/2.14.3/freetype-2.14.3.tar.xz|36bc4f1cc413335368ee656c42afca65c5a3987e8768cc28cf11ba775e785a5f|--with-harfbuzz=no --with-png=no --with-bzip2=no --with-brotli=no --with-zlib=no"
-"expat|autotools|https://github.com/libexpat/libexpat/releases/download/R_2_8_2/expat-2.8.2.tar.xz|3ad89b8588e6644bd4e49981480d48b21289eebbcd4f0a1a4afb1c29f99b6ab4"
+"expat|autotools|https://github.com/libexpat/libexpat/releases/download/R_2_8_3/expat-2.8.3.tar.xz|f6256df90c906773d344da084402b7d3e4f22ed41b1a59c989098a83d3ea0c85"
 "fribidi|autotools|https://github.com/fribidi/fribidi/releases/download/v1.0.16/fribidi-1.0.16.tar.xz|-"
 "harfbuzz|cmake|https://github.com/harfbuzz/harfbuzz/releases/download/12.3.2/harfbuzz-12.3.2.tar.xz|6f6db164359a2da5a84ef826615b448b33e6306067ad829d85d5b0bf936f1bb8|-DHB_HAVE_FREETYPE=ON -DHB_BUILD_TESTS=OFF -DHB_BUILD_EXAMPLES=OFF -DHB_BUILD_UTILS=OFF"
 "fontconfig|autotools|https://gitlab.freedesktop.org/fontconfig/fontconfig/-/archive/2.17.1/fontconfig-2.17.1.tar.gz|82e73b26adad651b236e5f5d4b3074daf8ff0910188808496326bd3449e5261d|--disable-docs --sysconfdir=/etc --localstatedir=/var"
