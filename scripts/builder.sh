@@ -150,7 +150,8 @@ post_install_fixup() {
     case "$name" in
         x265)
             # x265's pkg-config omits -lpthread, which breaks static linking
-            # into FFmpeg. See multicoreware/x265_git issue #371.
+            # into FFmpeg. See Multicorewareinc/x265 issue #125 (#371 on
+            # Bitbucket, before the migration renumbered it).
             local pc="${PREFIX}/lib/pkgconfig/x265.pc"
             if [ -f "$pc" ] && ! grep -q -- '-lpthread' "$pc"; then
                 sed_inplace 's/-lx265/-lx265 -lpthread/g' "$pc"

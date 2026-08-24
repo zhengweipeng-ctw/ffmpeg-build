@@ -73,7 +73,14 @@ DEPS=(
 # Note this is master, which is where Debian takes its snapshot from; the
 # stable branch lags it. Both are X264_BUILD 165, so the ABI is the same.
 "x264|autotools|https://code.videolan.org/videolan/x264/-/archive/0480cb05fa188d37ae87e8f4fd8f1aea3711f7ee/x264-0480cb05fa188d37ae87e8f4fd8f1aea3711f7ee.tar.bz2|f05c59f2e83d494c36307025dca2d3afc6b4d185f3a3453d06cc4fecd7094057|--enable-pic --disable-cli --disable-opencl"
-"x265|cmake|https://bitbucket.org/multicoreware/x265_git/get/4.2.tar.gz|-|-DENABLE_CLI=OFF -DENABLE_PIC=ON -DEXPORT_C_API=ON -DENABLE_ASSEMBLY=OFF -DENABLE_LIBNUMA=OFF @SUBDIR:source@"
+# x265 migrated from Bitbucket to github.com/Multicorewareinc/x265 in 2026;
+# bitbucket.org/multicoreware/x265_git now only serves its wiki. Pin the source
+# release asset (x265_<ver>.tar.gz — newer releases carry prebuilt binaries as
+# extra assets too), not the tag's git archive: x265Version.txt is regenerated
+# only when the release tarball is rolled, so a git archive of tag 4.2 still
+# reports "4.0" in x265.pc and in the encoder's version banner. An uploaded
+# asset is byte-stable as well, so unlike the Bitbucket URL it gets a sha256.
+"x265|cmake|https://github.com/Multicorewareinc/x265/releases/download/4.2/x265_4.2.tar.gz|40b1ea0453e0309f0eba934e0ddf533f8f6295966679e8894e8f1c1c8d5e1210|-DENABLE_CLI=OFF -DENABLE_PIC=ON -DEXPORT_C_API=ON -DENABLE_ASSEMBLY=OFF -DENABLE_LIBNUMA=OFF @SUBDIR:source@"
 "openh264|make|https://github.com/cisco/openh264/archive/refs/tags/v2.6.0.tar.gz|558544ad358283a7ab2930d69a9ceddf913f4a51ee9bf1bfb9e377322af81a69|OS=linux ARCH=x86_64 ENABLE64BIT=Yes PREFIX=@PREFIX@ @TARGET:libraries@ @INSTALL_TARGET:install-static@"
 "kvazaar|autotools|https://github.com/ultravideo/kvazaar/archive/refs/tags/v2.3.2.tar.gz|ddd0038696631ca5368d8e40efee36d2bbb805854b9b1dda8b12ea9b397ea951|--disable-shared"
 "dav1d|meson|https://code.videolan.org/videolan/dav1d/-/archive/1.5.4/dav1d-1.5.4.tar.gz|a1d5b63d2d38ec9bd03acf643caa51fa22edd1e89c5a109c4807717216bbec07|-Denable_tools=false -Denable_tests=false"
