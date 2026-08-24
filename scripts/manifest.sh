@@ -85,6 +85,13 @@ DEPS=(
 "kvazaar|autotools|https://github.com/ultravideo/kvazaar/archive/refs/tags/v2.3.2.tar.gz|ddd0038696631ca5368d8e40efee36d2bbb805854b9b1dda8b12ea9b397ea951|--disable-shared"
 "dav1d|meson|https://code.videolan.org/videolan/dav1d/-/archive/1.5.4/dav1d-1.5.4.tar.gz|a1d5b63d2d38ec9bd03acf643caa51fa22edd1e89c5a109c4807717216bbec07|-Denable_tools=false -Denable_tests=false"
 "vpx|autotools|https://github.com/webmproject/libvpx/archive/refs/tags/v1.16.0.tar.gz|7a479a3c66b9f5d5542a4c6a1b7d3768a983b1e5c14c60a9396edc9b649e015c|--enable-pic --disable-examples --disable-tools --disable-docs --disable-unit-tests --enable-vp8 --enable-vp9 --enable-vp9-highbitdepth"
+# aom has no GitHub mirror: the canonical repo is aomedia.googlesource.com/aom,
+# and storage.googleapis.com/aom-releases is where the Alliance publishes the
+# release tarballs — each signed by the AOMedia release key
+# B002F08B74A148DAA01F7123A48E86DB0B830498, which is also what Arch packages
+# from. The git host is no alternative: its gitiles "+archive" tarballs are
+# regenerated per request (Debian repacks them for that reason) and unpack with
+# no top-level directory, which extract()'s --strip-components=1 would eat.
 "aom|cmake|https://storage.googleapis.com/aom-releases/libaom-3.14.1.tar.gz|44bf90dbd23e734d50e70a8c41c285193922938bd0d3bc2ee56764d181d55ef5|-DENABLE_DOCS=OFF -DENABLE_EXAMPLES=OFF -DENABLE_TESTS=OFF -DENABLE_TOOLS=OFF -DCONFIG_PIC=1"
 "svtav1|cmake|https://gitlab.com/AOMediaCodec/SVT-AV1/-/archive/v4.1.0/SVT-AV1-v4.1.0.tar.gz|6c4c0c44ff0ba3d136d6f57f3a707f9de8e9c866f50f809c1d22a43f0d8c9583|-DCMAKE_INTERPROCEDURAL_OPTIMIZATION=OFF -DBUILD_APPS=OFF -DBUILD_TESTING=OFF"
 
