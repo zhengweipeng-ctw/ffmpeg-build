@@ -47,7 +47,7 @@ DEPS=(
 
 # text/subtitles (chain: freetype -> harfbuzz -> fontconfig -> libass)
 "freetype|autotools|https://downloads.sourceforge.net/project/freetype/freetype2/2.14.3/freetype-2.14.3.tar.xz|36bc4f1cc413335368ee656c42afca65c5a3987e8768cc28cf11ba775e785a5f|--with-harfbuzz=no --with-png=no --with-bzip2=no --with-brotli=no --with-zlib=no"
-"expat|autotools|https://github.com/libexpat/libexpat/releases/download/R_2_8_3/expat-2.8.3.tar.xz|f6256df90c906773d344da084402b7d3e4f22ed41b1a59c989098a83d3ea0c85"
+"expat|autotools|https://github.com/libexpat/libexpat/releases/download/R_2_8_4/expat-2.8.4.tar.xz|656ae1cc8da3b4ea513bb4e254f33e6243938084c0ec6239da873376b09985a7"
 "fribidi|autotools|https://github.com/fribidi/fribidi/releases/download/v1.0.16/fribidi-1.0.16.tar.xz|-"
 "harfbuzz|cmake|https://github.com/harfbuzz/harfbuzz/releases/download/12.3.2/harfbuzz-12.3.2.tar.xz|6f6db164359a2da5a84ef826615b448b33e6306067ad829d85d5b0bf936f1bb8|-DHB_HAVE_FREETYPE=ON -DHB_BUILD_TESTS=OFF -DHB_BUILD_EXAMPLES=OFF -DHB_BUILD_UTILS=OFF"
 "fontconfig|autotools|https://gitlab.freedesktop.org/fontconfig/fontconfig/-/archive/2.17.1/fontconfig-2.17.1.tar.gz|82e73b26adad651b236e5f5d4b3074daf8ff0910188808496326bd3449e5261d|--disable-docs --sysconfdir=/etc --localstatedir=/var"
@@ -84,7 +84,7 @@ DEPS=(
 "openh264|make|https://github.com/cisco/openh264/archive/refs/tags/v2.6.0.tar.gz|558544ad358283a7ab2930d69a9ceddf913f4a51ee9bf1bfb9e377322af81a69|OS=linux ARCH=x86_64 ENABLE64BIT=Yes PREFIX=@PREFIX@ @TARGET:libraries@ @INSTALL_TARGET:install-static@"
 "kvazaar|autotools|https://github.com/ultravideo/kvazaar/archive/refs/tags/v2.3.2.tar.gz|ddd0038696631ca5368d8e40efee36d2bbb805854b9b1dda8b12ea9b397ea951|--disable-shared"
 "dav1d|meson|https://code.videolan.org/videolan/dav1d/-/archive/1.5.4/dav1d-1.5.4.tar.gz|a1d5b63d2d38ec9bd03acf643caa51fa22edd1e89c5a109c4807717216bbec07|-Denable_tools=false -Denable_tests=false"
-"vpx|autotools|https://github.com/webmproject/libvpx/archive/refs/tags/v1.16.0.tar.gz|7a479a3c66b9f5d5542a4c6a1b7d3768a983b1e5c14c60a9396edc9b649e015c|--enable-pic --disable-examples --disable-tools --disable-docs --disable-unit-tests --enable-vp8 --enable-vp9 --enable-vp9-highbitdepth"
+"vpx|autotools|https://github.com/webmproject/libvpx/archive/refs/tags/v1.17.0.tar.gz|1020f184046187baa2985dbde38e0691f49c44088bca7a1842b0236c6081dc0a|--enable-pic --disable-examples --disable-tools --disable-docs --disable-unit-tests --enable-vp8 --enable-vp9 --enable-vp9-highbitdepth"
 # aom has no GitHub mirror: the canonical repo is aomedia.googlesource.com/aom,
 # and storage.googleapis.com/aom-releases is where the Alliance publishes the
 # release tarballs — each signed by the AOMedia release key
