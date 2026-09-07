@@ -61,6 +61,12 @@ Two entry points, one build implementation:
   containers. It runs `build-deps.sh` (all static dependencies) then
   `build-ffmpeg.sh` (FFmpeg linked against them).
 
+`scripts/` holds the build and nothing else: `build.sh` plus the files it
+sources. Maintenance tools that are not part of a build live in `tools/`
+(`deps-check-updates.py`, `deps-update-sha.sh`) — they read
+`scripts/manifest.sh`, run from a laptop or CI, and are not shipped into the
+build image, which copies only `scripts/`.
+
 All output goes under `.build/` by default; override with the `WORK_DIR`
 environment variable.
 
@@ -118,10 +124,10 @@ moves and the manifest does not, so the drift needs to be visible rather than
 discovered years later:
 
 ```sh
-./scripts/deps-check-updates.py                 # ffmpeg, then the full dep table
-./scripts/deps-check-updates.py dav1d x265      # just these
-./scripts/deps-check-updates.py --strict        # exit 1 if anything is behind Debian (CI)
-./scripts/deps-check-updates.py --json          # machine-readable
+./tools/deps-check-updates.py                 # ffmpeg, then the full dep table
+./tools/deps-check-updates.py dav1d x265      # just these
+./tools/deps-check-updates.py --strict        # exit 1 if anything is behind Debian (CI)
+./tools/deps-check-updates.py --json          # machine-readable
 ```
 
 It resolves the current testing codename from `deb.debian.org` (so it does not
@@ -168,8 +174,8 @@ Bumping a version is two steps — edit the URL in `DEPS`, then let the checksum
 follow:
 
 ```sh
-./scripts/deps-update-sha.sh dav1d              # re-download and rewrite its sha256
-./scripts/deps-update-sha.sh --check --all      # verify every pinned tarball still matches
+./tools/deps-update-sha.sh dav1d              # re-download and rewrite its sha256
+./tools/deps-update-sha.sh --check --all      # verify every pinned tarball still matches
 ```
 
 Dependencies whose sha is `-` are skipped: those URLs point at archives the

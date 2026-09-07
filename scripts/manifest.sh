@@ -97,7 +97,7 @@ DEPS=(
 
 )
 
-# --- Debian source package names (used by scripts/deps-check-updates.py) ---
+# --- Debian source package names (used by tools/deps-check-updates.py) ---
 # The versions above are pinned to what Debian testing ships. The script
 # verifies that by querying sources.debian.org, which indexes by *Debian source
 # package* name. That name usually equals the manifest name, so a dependency

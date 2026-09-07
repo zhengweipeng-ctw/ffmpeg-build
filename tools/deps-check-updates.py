@@ -16,11 +16,11 @@ FFmpeg itself is checked the same way but reported on its own line above the
 table: it is what this repo builds, not one of its dependencies.
 
 Usage:
-    scripts/deps-check-updates.py             # ffmpeg, then a table of the deps
-    scripts/deps-check-updates.py x264 dav1d  # only these
-    scripts/deps-check-updates.py --strict    # exit 1 if anything is behind Debian
-    scripts/deps-check-updates.py --json      # machine-readable, for CI
-    scripts/deps-check-updates.py --suite sid # compare against a different suite
+    tools/deps-check-updates.py             # ffmpeg, then a table of the deps
+    tools/deps-check-updates.py x264 dav1d  # only these
+    tools/deps-check-updates.py --strict    # exit 1 if anything is behind Debian
+    tools/deps-check-updates.py --json      # machine-readable, for CI
+    tools/deps-check-updates.py --suite sid # compare against a different suite
 """
 from __future__ import annotations
 

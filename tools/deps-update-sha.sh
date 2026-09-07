@@ -14,14 +14,15 @@
 # anything and touches nothing but manifest.sh.
 #
 # Usage:
-#   scripts/deps-update-sha.sh dav1d x265     # refresh these
-#   scripts/deps-update-sha.sh --all          # every dependency with a pinned sha
-#   scripts/deps-update-sha.sh --force x264   # also (re)pin a "-" entry
-#   scripts/deps-update-sha.sh --check dav1d  # report mismatches, change nothing
+#   tools/deps-update-sha.sh dav1d x265     # refresh these
+#   tools/deps-update-sha.sh --all          # every dependency with a pinned sha
+#   tools/deps-update-sha.sh --force x264   # also (re)pin a "-" entry
+#   tools/deps-update-sha.sh --check dav1d  # report mismatches, change nothing
 set -euo pipefail
 
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-: "${MANIFEST:=${HERE}/manifest.sh}"
+REPO_ROOT="$(cd "${HERE}/.." && pwd)"
+: "${MANIFEST:=${REPO_ROOT}/scripts/manifest.sh}"
 
 log()  { printf '\033[1;34m==>\033[0m %s\n' "$*" >&2; }
 warn() { printf '\033[1;33mWARN:\033[0m %s\n' "$*" >&2; }
