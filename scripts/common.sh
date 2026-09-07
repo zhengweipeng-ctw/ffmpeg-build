@@ -3,9 +3,6 @@
 
 set -euo pipefail
 
-# Production target is Linux (fully static).
-IS_LINUX=1
-
 # CPU count.
 cpu_count() {
     if command -v nproc >/dev/null 2>&1; then nproc

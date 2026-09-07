@@ -25,7 +25,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         libtool \
         gettext \
         autopoint \
-        libnuma-dev \
         gperf \
         gawk \
         perl \
