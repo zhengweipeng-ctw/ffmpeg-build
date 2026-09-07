@@ -2,9 +2,11 @@
 # Build FFmpeg (ffmpeg, ffprobe) against the static dependencies
 # previously built into $PREFIX by build-deps.sh.
 #
-# Third-party libraries are linked statically; only the core system libraries
-# (libc, libm, libgcc, libstdc++, libnuma) remain dynamic. Intended to run
-# inside the Ubuntu 24.04 build container (or natively on Ubuntu 24.04).
+# Third-party libraries are linked statically; only the glibc/gcc runtime
+# (libc, libm, libmvec, libgcc_s) remains dynamic. libstdc++ is folded into the
+# binary (see --extra-ldflags below) and no dependency pulls in libnuma any
+# more (see the note above the link flags). Intended to run inside the
+# Ubuntu 24.04 build container (or natively on Ubuntu 24.04).
 set -euo pipefail
 
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
