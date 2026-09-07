@@ -85,11 +85,15 @@ else
     export CXX="${CXX:-g++}"
 fi
 
-# sha256_matches FILE EXPECTED  -> 0 if match (or no expected sha), 1 otherwise.
-# Non-fatal counterpart to verify_sha256, used to test a cached file.
+# sha256_matches FILE EXPECTED  -> 0 only if EXPECTED is given and matches.
+# Non-fatal counterpart to verify_sha256, used to test a cached file. An empty
+# EXPECTED is deliberately *not* a match: the question being asked is "is this
+# the content I expect?", and with no expectation the answer cannot be yes.
+# (verify_sha256 treats it as a pass, which is right there — a fresh download
+# with nothing to verify against has nothing to fail.)
 sha256_matches() {
     local file="$1" expected="$2"
-    [ -n "$expected" ] || return 0
+    [ -n "$expected" ] || return 1
     [ "$(sha256_of "$file")" = "$expected" ]
 }
 
@@ -106,26 +110,46 @@ verify_sha256() {
 }
 
 # download URL DEST [SHA256]
+#
+# The cache is keyed by dependency name, not version, so a tarball left over
+# from a *previous* version of a dep shadows a new URL. A cached file is
+# therefore reused only when we can prove it is the right bytes:
+#
+#   manifest pins a sha256  ->  the checksum is the proof
+#   it pins "-"             ->  the URL it was fetched from is, recorded in a
+#                               "<dest>.url" sidecar next to the tarball
+#
+# The sidecar is what makes a sha-less dep safe to bump. Without it the empty
+# checksum made every cached file count as a match, so changing the URL reused
+# the OLD tarball, rebuilt the OLD source, and then wrote a stamp claiming the
+# NEW manifest line — wrong, silent, and self-concealing on the next build.
+#
+# Either proof failing means a version/URL bump, so the cache is treated as
+# stale and re-downloaded rather than aborting the whole build.
 download() {
     local url="$1" dest="$2" sha="${3:-}"
     if [ -f "$dest" ]; then
-        # The cache is keyed by dependency name, not version, so a cached
-        # tarball from a *previous* version of this dep can shadow a new URL.
-        # If a checksum is given and the cached file matches, reuse it; if it
-        # does not match, treat the cache as stale (a version/URL bump) and
-        # re-download rather than aborting the whole build.
-        if sha256_matches "$dest" "$sha"; then
+        if [ -n "$sha" ]; then
+            if sha256_matches "$dest" "$sha"; then
+                log "cached: $(basename "$dest")"
+                return 0
+            fi
+            warn "cached $(basename "$dest") does not match expected sha256; \
+stale cache from a previous version — re-downloading"
+        elif [ "$(cat "${dest}.url" 2>/dev/null)" = "$url" ]; then
             log "cached: $(basename "$dest")"
             return 0
+        else
+            warn "cached $(basename "$dest") came from a different url and the \
+manifest pins no sha256 — re-downloading"
         fi
-        warn "cached $(basename "$dest") does not match expected sha256; \
-stale cache from a previous version — re-downloading"
-        rm -f "$dest"
+        rm -f "$dest" "${dest}.url"
     fi
     log "download: $url"
     curl -fL --retry 3 --retry-delay 2 -o "${dest}.tmp" "$url"
     verify_sha256 "${dest}.tmp" "$sha"
     mv "${dest}.tmp" "$dest"
+    printf '%s' "$url" > "${dest}.url"
 }
 
 # extract ARCHIVE DEST_DIR  (strips leading component)
