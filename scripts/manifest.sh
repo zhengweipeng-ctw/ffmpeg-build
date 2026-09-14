@@ -55,7 +55,7 @@ DEPS=(
 
 # misc
 "snappy|cmake|https://github.com/google/snappy/archive/refs/tags/1.2.2.tar.gz|90f74bc1fbf78a6c56b3c4a082a05103b3a56bb17bca1a27e052ea11723292dc|-DSNAPPY_BUILD_TESTS=OFF -DSNAPPY_BUILD_BENCHMARKS=OFF"
-"xml2|autotools|https://download.gnome.org/sources/libxml2/2.15/libxml2-2.15.3.tar.xz|78262a6e7ac170d6528ebfe2efccdf220191a5af6a6cd61ea4a9a9a5042c7a07|--without-python --without-lzma --without-zlib --sysconfdir=/etc"
+"xml2|autotools|https://download.gnome.org/sources/libxml2/2.15/libxml2-2.15.4.tar.xz|98087fd181d9070724f3fbc65c7377db03038eb92bd882374daff44940138821|--without-python --without-lzma --without-zlib --sysconfdir=/etc"
 "webp|cmake|https://github.com/webmproject/libwebp/archive/refs/tags/v1.5.0.tar.gz|668c9aba45565e24c27e17f7aaf7060a399f7f31dba6c97a044e1feacb930f37|-DWEBP_BUILD_ANIMATIONS=OFF -DWEBP_BUILD_EXTRAS=OFF -DWEBP_BUILD_GIF2WEBP=OFF -DWEBP_BUILD_IMG2WEBP=OFF -DWEBP_BUILD_VWEBP=OFF -DWEBP_BUILD_WEBPINFO=OFF -DWEBP_BUILD_LIBWEBPMUX=OFF"
 "openjpeg|cmake|https://github.com/uclouvain/openjpeg/archive/refs/tags/v2.5.4.tar.gz|a695fbe19c0165f295a8531b1e4e855cd94d0875d2f88ec4b61080677e27188a|-DBUILD_CODEC=OFF -DBUILD_TESTING=OFF -DBUILD_DOC=OFF"
 "theora|autotools|https://downloads.xiph.org/releases/theora/libtheora-1.2.0.tar.gz|279327339903b544c28a92aeada7d0dcfd0397b59c2f368cc698ac56f515906e|--with-ogg=@PREFIX@ --with-vorbis=@PREFIX@ --disable-examples --disable-oggtest --disable-vorbistest"
