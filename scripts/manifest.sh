@@ -30,7 +30,7 @@ FFMPEG_SHA256="cf38e0e28c7e5605942c4a77755349b0145804a397af37eb1fb4c77cb237f635"
 DEPS=(
 # core compression/encoding
 "zlib|autotools|https://zlib.net/fossils/zlib-1.3.2.tar.gz|bb329a0a2cd0274d05519d61c667c062e06990d72e125ee2dfa8de64f0119d16|@NO_STATIC@"
-"xz|autotools|https://github.com/tukaani-project/xz/releases/download/v5.8.3/xz-5.8.3.tar.xz|fff1ffcf2b0da84d308a14de513a1aa23d4e9aa3464d17e64b9714bfdd0bbfb6|--disable-xz --disable-xzdec --disable-lzmadec --disable-lzmainfo --disable-scripts"
+"xz|autotools|https://github.com/tukaani-project/xz/releases/download/v5.8.4/xz-5.8.4.tar.xz|4ce24038fd4221e0d13bc1a2de7a4db56e90b92b3bf75321f6c14be73f65de4b|--disable-xz --disable-xzdec --disable-lzmadec --disable-lzmainfo --disable-scripts"
 
 # audio
 "ogg|autotools|https://downloads.xiph.org/releases/ogg/libogg-1.3.6.tar.gz|83e6704730683d004d20e21b8f7f55dcb3383cdf84c0daedf30bde175f774638"
@@ -54,9 +54,9 @@ DEPS=(
 "libass|autotools|https://github.com/libass/libass/releases/download/0.17.5/libass-0.17.5.tar.xz|2dca25c0e0c837ddf00b52011b3f82cac1e4ddd3ad018227806b0c2288864acc"
 
 # misc
-"snappy|cmake|https://github.com/google/snappy/archive/refs/tags/1.2.2.tar.gz|90f74bc1fbf78a6c56b3c4a082a05103b3a56bb17bca1a27e052ea11723292dc|-DSNAPPY_BUILD_TESTS=OFF -DSNAPPY_BUILD_BENCHMARKS=OFF"
+"snappy|cmake|https://github.com/google/snappy/archive/refs/tags/1.3.1.tar.gz|893f708a0bf4b5529d555ffcee390e940e932fcf90261f682604475a76cd0247|-DSNAPPY_BUILD_TESTS=OFF -DSNAPPY_BUILD_BENCHMARKS=OFF"
 "xml2|autotools|https://download.gnome.org/sources/libxml2/2.15/libxml2-2.15.4.tar.xz|98087fd181d9070724f3fbc65c7377db03038eb92bd882374daff44940138821|--without-python --without-lzma --without-zlib --sysconfdir=/etc"
-"webp|cmake|https://github.com/webmproject/libwebp/archive/refs/tags/v1.5.0.tar.gz|668c9aba45565e24c27e17f7aaf7060a399f7f31dba6c97a044e1feacb930f37|-DWEBP_BUILD_ANIMATIONS=OFF -DWEBP_BUILD_EXTRAS=OFF -DWEBP_BUILD_GIF2WEBP=OFF -DWEBP_BUILD_IMG2WEBP=OFF -DWEBP_BUILD_VWEBP=OFF -DWEBP_BUILD_WEBPINFO=OFF -DWEBP_BUILD_LIBWEBPMUX=OFF"
+"webp|cmake|https://github.com/webmproject/libwebp/archive/refs/tags/v1.6.0.tar.gz|93a852c2b3efafee3723efd4636de855b46f9fe1efddd607e1f42f60fc8f2136|-DWEBP_BUILD_ANIMATIONS=OFF -DWEBP_BUILD_EXTRAS=OFF -DWEBP_BUILD_GIF2WEBP=OFF -DWEBP_BUILD_IMG2WEBP=OFF -DWEBP_BUILD_VWEBP=OFF -DWEBP_BUILD_WEBPINFO=OFF -DWEBP_BUILD_LIBWEBPMUX=OFF"
 "openjpeg|cmake|https://github.com/uclouvain/openjpeg/archive/refs/tags/v2.5.4.tar.gz|a695fbe19c0165f295a8531b1e4e855cd94d0875d2f88ec4b61080677e27188a|-DBUILD_CODEC=OFF -DBUILD_TESTING=OFF -DBUILD_DOC=OFF"
 "theora|autotools|https://downloads.xiph.org/releases/theora/libtheora-1.2.0.tar.gz|279327339903b544c28a92aeada7d0dcfd0397b59c2f368cc698ac56f515906e|--with-ogg=@PREFIX@ --with-vorbis=@PREFIX@ --disable-examples --disable-oggtest --disable-vorbistest"
 "zimg|autotools|https://github.com/sekrit-twc/zimg/archive/refs/tags/release-3.0.6.tar.gz|be89390f13a5c9b2388ce0f44a5e89364a20c1c57ce46d382b1fcc3967057577"
