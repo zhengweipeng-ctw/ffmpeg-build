@@ -6,7 +6,7 @@ ships (see README). Debian moves; the manifest does not. This script makes the
 drift visible so a version bump is a deliberate act instead of an oversight.
 
 It reads scripts/manifest.sh directly (no sourcing — plain parsing), derives the
-pinned version from each tarball URL, and asks sources.debian.org what the
+pinned version from each tarball URL, and asks the Debian archive what the
 matching source package carries in unstable.
 
 Nothing here touches the build: it is a read-only reporting tool, safe to run
@@ -34,13 +34,20 @@ import urllib.error
 import urllib.parse
 import urllib.request
 from concurrent.futures import ThreadPoolExecutor
+from functools import cmp_to_key
 
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 MANIFEST = os.path.join(REPO_ROOT, "scripts", "manifest.sh")
 
 RELEASE_URL = "https://deb.debian.org/debian/dists/{suite}/Release"
-SOURCES_API = "https://sources.debian.org/api/src/{pkg}/"
-USER_AGENT = "ffmpeg-build-deps-check-updates/1.0 (+https://sources.debian.org/doc/api/)"
+# ftp-master's madison endpoint answers straight out of the archive, so an
+# upload is visible the moment it lands. sources.debian.org lags it — it still
+# listed ffmpeg 8.1.2 as sid's version a day after 9.0.2 had migrated there —
+# which is exactly the kind of staleness this script exists to catch.
+MADISON_API = "https://api.ftp-master.debian.org/madison?package={pkgs}&s={suite}&f=json"
+# Source packages per request; the whole manifest fits in a single round trip.
+MADISON_BATCH = 30
+USER_AGENT = "ffmpeg-build-deps-check-updates/1.0 (+https://ffmpeg.org/)"
 TIMEOUT = 30
 
 # Status values, ordered worst-first for the summary.
@@ -228,10 +235,10 @@ def _fetch(url: str) -> bytes:
 def resolve_codename(suite: str) -> str:
     """Map a suite alias (unstable/testing/stable) to its Debian codename.
 
-    sources.debian.org indexes by codename (sid, forky, trixie). "unstable" is
-    always sid, but resolving it from the archive instead of hard-coding the
-    mapping is what keeps --suite testing from silently pinning us to whatever
-    codename was current when this script was written.
+    The archive accepts either form; the codename (sid, forky, trixie) is what
+    the report prints, so a table read months later still says which release it
+    was compared against rather than "testing", which by then means something
+    else. Resolving it from the archive keeps that honest for free.
     """
     if suite not in ("testing", "stable", "oldstable", "unstable"):
         return suite  # already a codename
@@ -242,20 +249,105 @@ def resolve_codename(suite: str) -> str:
     return m.group(1)
 
 
-def debian_version(pkg: str, codename: str) -> tuple[str | None, str | None]:
-    """Return (version-in-suite, error). Unknown packages are not an error."""
-    try:
-        data = json.loads(_fetch(SOURCES_API.format(pkg=pkg)))
-    except (urllib.error.URLError, OSError, ValueError) as exc:
-        return None, str(exc)
-    # The API answers 200 with {"error": 404} for unknown packages, so the HTTP
-    # status is not usable as a signal here.
-    if "error" in data:
-        return None, None
-    for entry in data.get("versions", []):
-        if codename in entry.get("suites", []):
-            return entry["version"], None
-    return None, None
+def _order(c: str) -> int:
+    """Sort weight of one character, per deb-version(5).
+
+    "~" sorts before everything, so 1.0~rc1 < 1.0; letters sort before every
+    other non-digit. Digits and end-of-string weigh 0 because the numeric half
+    of _verrevcmp() handles them.
+    """
+    if not c or c.isdigit():
+        return 0
+    if c.isalpha():
+        return ord(c)
+    if c == "~":
+        return -1
+    return ord(c) + 256
+
+
+def _verrevcmp(a: str, b: str) -> int:
+    """Compare one version part (upstream or revision) the way dpkg does.
+
+    Alternates non-digit runs (compared by _order) with digit runs (compared
+    numerically, leading zeros ignored) — which is what makes 1.10 sort after
+    1.9 instead of before it.
+    """
+    def ch(s: str, k: int) -> str:
+        return s[k] if k < len(s) else ""
+
+    i = j = 0
+    while i < len(a) or j < len(b):
+        first_diff = 0
+        while (ch(a, i) and not ch(a, i).isdigit()) or (ch(b, j) and not ch(b, j).isdigit()):
+            ac, bc = _order(ch(a, i)), _order(ch(b, j))
+            if ac != bc:
+                return ac - bc
+            i, j = i + 1, j + 1
+        while ch(a, i) == "0":
+            i += 1
+        while ch(b, j) == "0":
+            j += 1
+        while ch(a, i).isdigit() and ch(b, j).isdigit():
+            if not first_diff:
+                first_diff = ord(a[i]) - ord(b[j])
+            i, j = i + 1, j + 1
+        if ch(a, i).isdigit():
+            return 1
+        if ch(b, j).isdigit():
+            return -1
+        if first_diff:
+            return first_diff
+    return 0
+
+
+def debian_version_cmp(v1: str, v2: str) -> int:
+    """Order two Debian versions the way `dpkg --compare-versions` does."""
+    def split(v: str) -> tuple[int, str, str]:
+        epoch, sep, rest = v.partition(":")
+        if not sep or not epoch.isdigit():
+            epoch, rest = "0", v
+        upstream, sep, revision = rest.rpartition("-")
+        if not sep:
+            upstream, revision = rest, ""
+        return int(epoch), upstream, revision
+
+    e1, u1, r1 = split(v1)
+    e2, u2, r2 = split(v2)
+    if e1 != e2:
+        return e1 - e2
+    return _verrevcmp(u1, u2) or _verrevcmp(r1, r2)
+
+
+def debian_versions(pkgs: list[str], suite: str) -> tuple[dict[str, str], str | None]:
+    """Return ({source package: newest version in `suite`}, error).
+
+    A suite routinely carries several versions of one source package — sid held
+    ffmpeg 7.1.5, 8.1.2 and 9.0.2 at the same time — so the newest has to be
+    picked explicitly instead of trusting whichever the archive lists first.
+    Packages absent from the suite are simply missing from the mapping, which
+    is not an error.
+    """
+    out: dict[str, str] = {}
+    for start in range(0, len(pkgs), MADISON_BATCH):
+        url = MADISON_API.format(
+            pkgs=urllib.parse.quote(" ".join(pkgs[start:start + MADISON_BATCH])),
+            suite=urllib.parse.quote(suite),
+        )
+        try:
+            data = json.loads(_fetch(url))
+        except (urllib.error.URLError, OSError, ValueError) as exc:
+            return {}, str(exc)
+        # [{"<pkg>": {"<suite>": {"<version>": {"source_version": ..., ...}}}}]
+        # Binary-only rebuilds (...+b3) get their own rows, so read
+        # source_version rather than the row's key.
+        for entry in data:
+            for pkg, suites in entry.items():
+                versions = [row.get("source_version") or ver
+                            for rows in suites.values()
+                            for ver, row in rows.items()]
+                if versions:
+                    out[pkg] = max(versions, key=cmp_to_key(debian_version_cmp))
+    return out, None
 
 
 # --- version handling -------------------------------------------------------
@@ -291,7 +383,8 @@ def compare(pinned: str, debian: str) -> str:
 
 # --- reporting --------------------------------------------------------------
 
-def check(dep: dict, debian_src: dict[str, str], codename: str) -> dict:
+def check(dep: dict, debian_src: dict[str, str], codename: str,
+          versions: dict[str, str], err: str | None) -> dict:
     name: str = dep["name"]
     pkg: str = debian_src.get(name) or name
     row = {
@@ -309,11 +402,11 @@ def check(dep: dict, debian_src: dict[str, str], codename: str) -> dict:
         row["note"] = "not packaged in Debian"
         return row
 
-    debver, err = debian_version(pkg, codename)
     if err:
         row["status"] = ERROR
         row["note"] = err
         return row
+    debver = versions.get(pkg)
     if debver is None:
         row["status"] = UNTRACKED
         row["note"] = f"'{pkg}' not in {codename}"
@@ -428,8 +521,11 @@ def main() -> int:
         return 2
 
     targets = ([ffmpeg] if ffmpeg else []) + deps
+    pkgs = sorted({debian_src.get(d["name"]) or d["name"] for d in targets} - {"-"})
+    versions, lookup_err = debian_versions(pkgs, codename)
     with ThreadPoolExecutor(max_workers=args.jobs) as pool:
-        checked = list(pool.map(lambda d: check(d, debian_src, codename), targets))
+        checked = list(pool.map(
+            lambda d: check(d, debian_src, codename, versions, lookup_err), targets))
     ffmpeg_row = checked[0] if ffmpeg else None
     rows = checked[1:] if ffmpeg else checked
 

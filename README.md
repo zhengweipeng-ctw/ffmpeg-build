@@ -130,10 +130,15 @@ discovered years later:
 ./tools/deps-check-updates.py --json          # machine-readable
 ```
 
-It resolves the suite codename from `deb.debian.org` rather than hard-coding it
-(unstable is always `sid`, but that way `--suite testing` does not rot when
-testing rolls over), then asks `sources.debian.org` for each source package.
-Read-only, stdlib-only Python 3, no network access during a build.
+It resolves the suite codename from `deb.debian.org` (so a table read later still
+names `sid` or `forky`, rather than a `testing` that has since moved on), then
+asks ftp-master's `madison` API for every source package in one request. That is
+the archive itself, so an upload is visible the moment it lands —
+`sources.debian.org` lags it by a day or more, which is how a stale `ffmpeg
+8.1.2` can outlive the 9.0.2 that has already migrated to sid. A suite routinely
+carries several versions of one source package, so the newest is picked using
+dpkg's own version ordering. Read-only, stdlib-only Python 3, no network access
+during a build.
 
 FFmpeg is checked the same way but reported on its own line above the table
 (and under a separate `ffmpeg` key in `--json`) — it is what this repo builds,
