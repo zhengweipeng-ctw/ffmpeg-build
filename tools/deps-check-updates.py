@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
-"""Report dependencies whose pinned version has drifted from Debian testing.
+"""Report dependencies whose pinned version has drifted from Debian unstable.
 
-The manifest pins every third-party library to the version Debian testing
+The manifest pins every third-party library to the version Debian unstable
 ships (see README). Debian moves; the manifest does not. This script makes the
 drift visible so a version bump is a deliberate act instead of an oversight.
 
 It reads scripts/manifest.sh directly (no sourcing — plain parsing), derives the
 pinned version from each tarball URL, and asks sources.debian.org what the
-matching source package carries in testing.
+matching source package carries in unstable.
 
 Nothing here touches the build: it is a read-only reporting tool, safe to run
 from a laptop or CI. Requires only Python 3 stdlib and network access.
@@ -16,11 +16,11 @@ FFmpeg itself is checked the same way but reported on its own line above the
 table: it is what this repo builds, not one of its dependencies.
 
 Usage:
-    tools/deps-check-updates.py             # ffmpeg, then a table of the deps
-    tools/deps-check-updates.py x264 dav1d  # only these
-    tools/deps-check-updates.py --strict    # exit 1 if anything is behind Debian
-    tools/deps-check-updates.py --json      # machine-readable, for CI
-    tools/deps-check-updates.py --suite sid # compare against a different suite
+    tools/deps-check-updates.py                 # ffmpeg, then a table of the deps
+    tools/deps-check-updates.py x264 dav1d      # only these
+    tools/deps-check-updates.py --strict        # exit 1 if anything is behind Debian
+    tools/deps-check-updates.py --json          # machine-readable, for CI
+    tools/deps-check-updates.py --suite testing # compare against another suite
 """
 from __future__ import annotations
 
@@ -226,11 +226,12 @@ def _fetch(url: str) -> bytes:
 
 
 def resolve_codename(suite: str) -> str:
-    """Map a suite alias (testing/stable/unstable) to its Debian codename.
+    """Map a suite alias (unstable/testing/stable) to its Debian codename.
 
-    sources.debian.org indexes by codename (forky, trixie, sid), so tracking
-    "testing" without resolving it would silently pin us to whatever codename
-    was current when this script was written.
+    sources.debian.org indexes by codename (sid, forky, trixie). "unstable" is
+    always sid, but resolving it from the archive instead of hard-coding the
+    mapping is what keeps --suite testing from silently pinning us to whatever
+    codename was current when this script was written.
     """
     if suite not in ("testing", "stable", "oldstable", "unstable"):
         return suite  # already a codename
@@ -391,11 +392,11 @@ def print_table(rows: list[dict], codename: str, color: bool) -> None:
 
 def main() -> int:
     ap = argparse.ArgumentParser(
-        description="Compare pinned dependency versions against Debian testing."
+        description="Compare pinned dependency versions against Debian unstable."
     )
     ap.add_argument("deps", nargs="*", help="only check these dependencies")
-    ap.add_argument("--suite", default="testing",
-                    help="Debian suite or codename to compare against (default: testing)")
+    ap.add_argument("--suite", default="unstable",
+                    help="Debian suite or codename to compare against (default: unstable)")
     ap.add_argument("--strict", action="store_true",
                     help="exit 1 if any dependency is behind Debian")
     ap.add_argument("--json", action="store_true", help="emit JSON instead of a table")

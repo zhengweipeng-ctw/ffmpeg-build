@@ -4,7 +4,7 @@ Build a **statically-linked FFmpeg 9.0.1** (`ffmpeg`, `ffprobe`) for
 **Linux / x86_64 (amd64)**.
 
 All third-party libraries are compiled from source and linked statically, with
-versions pinned to what Debian **testing** ships. Only the core glibc/gcc
+versions pinned to what Debian **unstable** (sid) ships. Only the core glibc/gcc
 runtime (`libc`, `libm`, `libmvec`, `libgcc_s`) stays dynamic — libstdc++ is
 linked statically and there is no libnuma or other third-party dependency. The
 build runs in an **Ubuntu 24.04** container, so it is reproducible and
@@ -119,7 +119,7 @@ serialized. Tune with `JOBS=10 DEP_JOBS=4 ./container/build-in-container.sh`
 
 ## Keeping versions current
 
-The manifest pins each library to the version Debian testing ships. Debian
+The manifest pins each library to the version Debian unstable ships. Debian
 moves and the manifest does not, so the drift needs to be visible rather than
 discovered years later:
 
@@ -130,9 +130,10 @@ discovered years later:
 ./tools/deps-check-updates.py --json          # machine-readable
 ```
 
-It resolves the current testing codename from `deb.debian.org` (so it does not
-rot when testing rolls over), then asks `sources.debian.org` for each source
-package. Read-only, stdlib-only Python 3, no network access during a build.
+It resolves the suite codename from `deb.debian.org` rather than hard-coding it
+(unstable is always `sid`, but that way `--suite testing` does not rot when
+testing rolls over), then asks `sources.debian.org` for each source package.
+Read-only, stdlib-only Python 3, no network access during a build.
 
 FFmpeg is checked the same way but reported on its own line above the table
 (and under a separate `ffmpeg` key in `--json`) — it is what this repo builds,
@@ -143,7 +144,7 @@ Each dependency lands in one of five states:
 
 | status | meaning |
 | --- | --- |
-| `ok` | pinned version equals Debian testing |
+| `ok` | pinned version equals Debian unstable |
 | `behind` | Debian ships newer — a bump is due |
 | `ahead` | we pin newer than Debian (deliberate; e.g. tracking a release Debian hasn't taken) |
 | `untracked` | not packaged in Debian — the pinned version is ours to choose and watch by hand |

@@ -65,7 +65,7 @@ DEPS=(
 
 # video codecs
 # x264 has never tagged a release — the upstream repo carries zero tags, so
-# every distro ships a git snapshot. Pin the exact commit Debian testing
+# every distro ships a git snapshot. Pin the exact commit Debian unstable
 # packages (its 2:0.165.3223+git20250910.0480cb0 decodes to
 # 0.<X264_BUILD>.<commit-count>+git<date>.<commit>), not a branch name: a
 # branch URL makes the source non-reproducible and, because the stamp cache
@@ -98,7 +98,7 @@ DEPS=(
 )
 
 # --- Debian source package names (used by tools/deps-check-updates.py) ---
-# The versions above are pinned to what Debian testing ships. The script
+# The versions above are pinned to what Debian unstable ships. The script
 # verifies that by querying sources.debian.org, which indexes by *Debian source
 # package* name. That name usually equals the manifest name, so a dependency
 # missing from this table is looked up under its own name and only the
